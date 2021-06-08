@@ -3,12 +3,15 @@ import { Link, useHistory } from "react-router-dom";
 import firebase from "../Firebase";
 
 export default function Home(props) {
-  const { redirectTo } = props;
+  const { redirectTo, gameId } = props;
   const history = useHistory();
-  console.log(redirectTo);
   if (redirectTo === "game-room") {
-    history.push("/game-room");
+    history.push({
+      pathname: "/game-room",
+      state: { gameId: gameId },
+    });
   }
+  console.log('GameId', gameId)
   return (
     <div className="home-wrapper home">
       <div className="info">
