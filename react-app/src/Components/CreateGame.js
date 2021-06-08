@@ -19,6 +19,7 @@ export default function CreateGame() {
         playerOneRole: "tiger",
         hasStarted: false,
         hasJoined: false,
+        turn: 'goat'
       })
       .then((res) => {
         window.FBInstant.updateAsync({

@@ -6,8 +6,23 @@ import $ from "jquery";
 import { useHistory } from "react-router";
 import firebase from "../Firebase";
 import Loading from "./Loading.js";
-
-export default function GameMultiplayer() {
+// change
+const windowcontext = {
+  context: {
+    getID: () => {
+      return "4190268597701638";
+    },
+  },
+  player: {
+    getID: () => {
+      return "3872493182848314";
+    },
+    getName: () => {
+      return "Arun";
+    },
+  },
+};
+export default function GameMultiplayerTest() {
   const [game, setGame] = useState();
   const [player, setPlayer] = useState("");
   const [enableMatch, setEnableMatch] = useState(false);
@@ -24,8 +39,11 @@ export default function GameMultiplayer() {
   let maxNoOfGoatEatenToFinishGame = 5;
   let LocalAvailablePositions = availablePositions.movePositon;
   let LocalFeedPositions = availablePositions.feedPosition;
-  let gameId = history.location.state.gameId;
-  let contextId = history.location.state.contextId;
+  //change
+  let gameId = "eHNsmJcNOopDkiEG05fi";
+  // let gameId = history.location.state.gameId;
+  // let contextId = history.location.state.contextId;
+  let contextId = "4190268597701638";
   let ref = firebase.firestore().collection("matches");
 
   useEffect(() => {
@@ -34,6 +52,7 @@ export default function GameMultiplayer() {
     placeTiger(".box4 .p2");
     placeTiger(".box13 .p4");
     placeTiger(".box16 .p3");
+    //change
     const unsubscribe = ref
       .doc(contextId)
       .collection("match")
@@ -43,7 +62,10 @@ export default function GameMultiplayer() {
         if (doc.exists) {
           let getMatchData = doc.data();
           console.log("game", game);
+          // getPlayerRole(getMatchData);
           receiveDBChange(getMatchData);
+          // setTurn(getMatchData.turn);
+          // setGame({ ...getMatchData });
         } else {
           console.log("Game Not Found");
         }
@@ -57,7 +79,7 @@ export default function GameMultiplayer() {
       let getMatchData = doc.data();
       setGame({ ...getMatchData });
       getPlayerRole(getMatchData);
-      // console.log(getMatchData, "getMatchData");
+      console.log(getMatchData, "getMatchData");
     }
   };
   console.log("REpeating game", game);
@@ -68,19 +90,21 @@ export default function GameMultiplayer() {
   const getPlayerRole = (getMatchData) => {
     // console.log("Data From Backend ", getMatchData);
 
-    let currentPlayerId = window.FBInstant.player.getID();
+    //change
+    let currentPlayerId = windowcontext.player.getID();
     if (currentPlayerId === getMatchData.playerOneId) {
       setPlayer({
         role: getMatchData.playerOneRole,
         id: currentPlayerId,
         //change
-        name: window.FBInstant.player.getName(),
+        name: windowcontext.player.getName(),
       });
     } else {
       setPlayer({
         role: getMatchData.playerTwoRole,
         id: currentPlayerId,
-        name: window.FBInstant.player.getName(),
+        //change
+        name: windowcontext.player.getName(),
       });
     }
   };
@@ -183,16 +207,15 @@ export default function GameMultiplayer() {
     let ifAlreadyTigerExit = $(positionClass).find(".tiger");
     if ($(ifAlreadyGoatExit).length + $(ifAlreadyTigerExit).length === 0) {
       if (selectedGoat.length === 0) {
-      let goatCount = $(document).find(".goat");
-
-        if (goatCount.length < 20) {
-          let goatClass = "goat goat" + goatCount.length;
+        if (goatCount > 0) {
+          let goatClass = "goat goat" + goatCount;
           let t =
             `<div class="${goatClass}"><img class="goat-image" src="` +
             goat +
             `"/></div>`;
           $(positionClass).append(t);
           // switchTurn();
+          goatCount--;
           return true;
         }
       } else {

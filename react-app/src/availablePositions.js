@@ -14,7 +14,7 @@ export const  availablePositions = {
 
         '.box9 .p1': ['.box5 .p1', '.box6 .p1', '.box10 .p1', '.box13 .p1', '.box14 .p1'],
         '.box10 .p1': ['.box9 .p1', '.box6 .p1', '.box11 .p1', '.box14 .p1'],
-        '.box11 .p1': ['.box6 .p1', '.box7 .p1', '.box8 .p1', '.box10 .p1', '.box12 .p1', '.box14 .p1', '.box15 .p1', '.box16W .p1'],
+        '.box11 .p1': ['.box6 .p1', '.box7 .p1', '.box8 .p1', '.box10 .p1', '.box12 .p1', '.box14 .p1', '.box15 .p1', '.box16 .p1'],
         '.box12 .p1': ['.box8 .p1', '.box12 .p2', '.box16 .p1', '.box11 .p1'],
         '.box12 .p2': ['.box12 .p1', '.box8 .p1', '.box8 .p2', '.box16 .p1', '.box16 .p2'],
 
