@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Baagchal Ko Baadshah</title>
+
+    <!-- <script src="https://connect.facebook.net/en_US/fbinstant.6.2.js"></script> -->
+    <script src="js/mock/fbinstant.6.0.mock.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/JQuery3.5.1.min.js"></script>
+
+    <script type="text/javascript">
+      const BACKEND_URL = "http://localhost:5000";
+      const MESSAGE_TO_BOT = { message: "Don't Panic!" };
+      const DATA_TO_STORE = { meaning: 42 };
+
+      window.onload = function () {
+        FBInstant.initializeAsync()
+          .then(function () {
+            FBInstant.setLoadingProgress(100);
+            console.log("initializeAsync called");
+            FBInstant.startGameAsync()
+              .then(function () {
+                console.log("startGameAsync called");
+
+                //
+                // Bot data
+                //
+                var entryPointData = FBInstant.getEntryPointData();
+                console.log("entryPointData", entryPointData);
+                if (entryPointData) {
+                  showMessage(
+                    "bot-payload-content",
+                    JSON.stringify(entryPointData)
+                  );
+                } else {
+                  showMessage("bot-payload-content", "No data");
+                }
+
+                //
+                // Backend game data
+                //
+                var contextId = getOrCreateContextId();
+                console.log("Going to retrieve backend data");
+
+                // Signing context ID
+                FBInstant.player
+                  .getSignedPlayerInfoAsync(contextId)
+                  .then(function (signedPlayerInfo) {
+                    // Requesting data from backend passing the signature as an argument
+                    // The backend APP can retrieve contextId from the signature
+                    var signature = signedPlayerInfo.getSignature();
+                    return new backendClient(BACKEND_URL).load(signature);
+                  })
+                  .then(
+                    function (response) {
+                      // Got successful response from backend
+                      console.log("Loaded from backend", response);
+                      if (response.empty) {
+                        showMessage("backend-match-content", "No data");
+                      } else {
+                        showMessage(
+                          "backend-match-content",
+                          JSON.stringify(response.data)
+                        );
+                      }
+                    }.bind(this)
+                  )
+                  .catch(
+                    function (error) {
+                      // Got error response from backend
+                      console.error("Not loaded from backend", error);
+                      showMessage(
+                        "error-messages",
+                        "Error loading backend data:" + error.message
+                      );
+                    }.bind(this)
+                  );
+              })
+              .catch((e) => {
+                console.log("Error in Start Game Async", e);
+              });
+          })
+          .catch((e) => {
+            console.log("Error in initialization", e);
+          });
+      };
+
+      function sendBotData() {
+        FBInstant.setSessionData(MESSAGE_TO_BOT);
+        showMessage(
+          "bot-payload-content",
+          "Session data was set. Closing game to get bot message."
+        );
+        FBInstant.quit();
+      }
+
+      function saveBackendData() {
+        var contextId = getOrCreateContextId();
+        console.log("Context Id: ", contextId);
+        // Sign data before sending to backend, so we can verify it's
+        // legitimally sent by the game
+        FBInstant.player
+          .getSignedPlayerInfoAsync(JSON.stringify(DATA_TO_STORE))
+          .then(
+            function (result) {
+              var signature = result.getSignature();
+
+              return new backendClient(BACKEND_URL).save(
+                contextId,
+                result.getPlayerID(),
+                result.getSignature()
+              );
+            }.bind(this)
+          )
+          .then(
+            function (response) {
+              if (response.success) {
+                showMessage(
+                  "backend-match-content",
+                  "Data saved to backend. <br /> " +
+                    JSON.stringify(DATA_TO_STORE)
+                );
+              } else {
+                showMessage(
+                  "backend-match-content",
+                  "Data not saved to backend " + JSON.stringify(response)
+                );
+              }
+            }.bind(this)
+          )
+          .catch(
+            function (error) {
+              showMessage(
+                "error-messages",
+                "Error saving backend data:" + error.message
+              );
+            }.bind(this)
+          );
+      }
+
+      function getOrCreateContextId() {
+        var contextType = FBInstant.context.getType();
+        var contextId = FBInstant.context.getID();
+        if (contextType == "SOLO") {
+          contextId = FBInstant.player.getID() + "_SOLO";
+        }
+        return contextId;
+      }
+
+      function showMessage(div, message) {
+        document.getElementById(div).innerHTML = message;
+      }
+
+      
+    </script>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/availablePositions.js"></script>
+  </head>
+  <body>
+    <button class="invite">Invite</button>
+    <!-- <div class="panel">
+      <p>Payload received from Bot:</p>
+      <div id="bot-payload-content" class="display-data"></div>
+
+      <p>Press the button below to send a custom message to the Bot.</p>
+      <input
+        type="button"
+        id="btn-send-message"
+        class="button"
+        onclick="sendBotData();"
+        value="Send Message to Bot"
+      />
+    </div>
+
+    <div class="panel">
+      <p>Data stored in the backend:</p>
+      <div id="backend-match-content" class="display-data"></div>
+
+      <p>Press the button below to save data in your backend service</p>
+      <input
+        type="button"
+        id="btn-save-data"
+        class="button"
+        onclick="saveBackendData();"
+        value="Save Backend Data"
+      />
+    </div> -->
+
+    <div id="error-messages" class="display-data"></div>
+
+    <div class="score"></div>
+    <div class="navigation">
+      <a href="#" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <a href="/"><i class="fas fa-home"></i></a>
+    </div>
+    <div class="board-wrapper">
+      <div class="board goatTurn">
+        <div class="box box1">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box2">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box3">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box4">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box5">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box6">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box7">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box8">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box9">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box10">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box11">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box12">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box13">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box14">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box15">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+        <div class="box box16">
+          <div class="p p1"></div>
+          <div class="p p2"></div>
+          <div class="p p3"></div>
+          <div class="p p4"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let turn = "goat";
+      let goatCount = 20;
+      let tigerCount = 4;
+      let eatenScore = 0;
+      let maxNoOfGoatEatenToFinishGame = 5;
+      let LocalAvailablePositions = availablePositions.movePositon;
+      let LocalFeedPositions = availablePositions.feedPosition;
+      $(document).ready(function () {
+        placeTiger(".box1 .p1");
+        placeTiger(".box4 .p2");
+        placeTiger(".box13 .p4");
+        placeTiger(".box16 .p3");
+      });
+
+      function placeTiger(positionClass) {
+        let selectedTiger = $(document).find(".tiger.selected");
+
+        if (selectedTiger.length) {
+          let selectedTigerClass = $(selectedTiger).closest(".p").attr("class");
+          let selectedTigerBoxClass = $(selectedTiger)
+            .closest(".box")
+            .attr("class");
+          selectedTigerClass =
+            "." +
+            selectedTigerBoxClass.split(" ")[1] +
+            " ." +
+            selectedTigerClass.split(" ")[1];
+          let availabilityCheck = checkAvailableTigerPosition(
+            selectedTigerClass,
+            positionClass
+          );
+          if (availabilityCheck) {
+            let ifAlreadyGoatExit = $(positionClass).find(".goat");
+            let ifAlreadyTigerExit = $(positionClass).find(".tiger");
+            if (
+              $(ifAlreadyGoatExit).length + $(ifAlreadyTigerExit).length ===
+              0
+            ) {
+              let value = $(document).find(".tiger.selected").html();
+              $(document).find(".tiger.selected").remove();
+              let t =
+                `<div class="tiger tiger` +
+                value +
+                `"><img src="images/tiger.png" /></div>`;
+              $(positionClass).append(t);
+              switchTurn();
+            }
+          } else {
+          }
+        } else {
+          if (tigerCount > 0) {
+            let t =
+              `<div class="tiger tiger` +
+              tigerCount +
+              `"><img src="images/tiger.png" /></div>`;
+            $(positionClass).append(t);
+            switchTurn();
+            tigerCount--;
+          }
+        }
+      }
+
+      function placeGoat(positionClass) {
+        let selectedGoat = $(document).find(".goat.selected");
+
+        let ifAlreadyGoatExit = $(positionClass).find(".goat");
+        let ifAlreadyTigerExit = $(positionClass).find(".tiger");
+        if ($(ifAlreadyGoatExit).length + $(ifAlreadyTigerExit).length === 0) {
+          if (selectedGoat.length === 0) {
+            if (goatCount > 0) {
+              let goatClass = "goat goat" + goatCount;
+              let t = `<div class="${goatClass}"><img src="images/goat.png"/></div>`;
+              $(positionClass).append(t);
+              switchTurn();
+              goatCount--;
+            }
+          } else {
+            let selectedGoatClass = $(selectedGoat).closest(".p").attr("class");
+            let selectedGoatBoxClass = $(selectedGoat)
+              .closest(".box")
+              .attr("class");
+            selectedGoatClass =
+              "." +
+              selectedGoatBoxClass.split(" ")[1] +
+              " ." +
+              selectedGoatClass.split(" ")[1];
+            let availabilityCheck = checkAvailableGoatPosition(
+              selectedGoatClass,
+              positionClass
+            );
+            if (availabilityCheck) {
+              let value = $(document).find(".goat.selected").html();
+              $(document).find(".goat.selected").remove();
+              let t = `<div class="goat selected"><img src="images/goat.png"/> </div>`;
+              $(positionClass).append(t);
+              switchTurn();
+            } else {
+            }
+          }
+        } else {
+        }
+      }
+
+      function checkAvailableGoatPosition(position, target) {
+        let validPositions = LocalAvailablePositions[position];
+        let isValid = validPositions.indexOf(target);
+        return isValid >= 0;
+      }
+
+      function checkAvailableTigerPosition(position, target) {
+        let validPositions = LocalAvailablePositions[position];
+        let isValid = validPositions.indexOf(target);
+        if (isValid === -1) {
+          let feedingPositions = LocalFeedPositions[position];
+          let isFeeding = false;
+          let eatenGoat = "";
+          feedingPositions.map(function (fp) {
+            if (fp.destination === target) {
+              let chekDestination = $(fp.destination).html();
+              let goatExist = $(fp.food).find(".goat");
+              if (goatExist.length && chekDestination === "") {
+                eatenGoat = fp.food;
+                isFeeding = true;
+                return true;
+              } else {
+                return false;
+              }
+            }
+          });
+          if (isFeeding) {
+            handleGoatEaten(eatenGoat);
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      }
+
+      function handleGoatEaten(eatenClass) {
+        $(eatenClass).find(".goat").remove();
+        eatenScore++;
+        $(".score").html(eatenScore);
+        if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
+          alert("Game Over, Tiger Won");
+        }
+      }
+
+      function switchTurn() {
+        if (turn === "tiger") {
+          turn = "goat";
+          $(".board").removeClass("tigerTurn").addClass("goatTurn");
+          $(".tiger").removeClass("selected");
+        } else {
+          turn = "tiger";
+          $(".board").removeClass("goatTurn").addClass("tigerTurn");
+          $(".goat").removeClass("selected");
+        }
+      }
+
+      function checkIfTigerCornered() {
+        let tigers = $(document).find(".tiger");
+        $(tigers).removeClass("selected");
+        let availablePosition = 0;
+        tigers.map(function () {
+          let className = $(this).closest(".p").attr("class");
+          let boxClass = $(this).closest(".box").attr("class");
+          let position =
+            "." + boxClass.split(" ")[1] + " ." + className.split(" ")[1];
+          let validPositions = LocalAvailablePositions[position];
+          let feedingPositions = LocalFeedPositions[position];
+          validPositions.map(function (p) {
+            let hasFilled = $(p).html();
+            if (hasFilled === "") {
+              availablePosition++;
+            }
+          });
+          feedingPositions.map(function (p, key) {
+            let hasFilled = $(p.destination).html();
+            if (hasFilled.trim() === "") {
+              let ifGoatExist = $(p.food).find(".goat");
+              if (ifGoatExist.length) {
+                console.log("Feed Position Counted");
+                availablePosition++;
+              }
+            }
+          });
+        });
+        return availablePosition;
+      }
+
+      $(document).on("click", ".p", function () {
+        let box = $(this).closest(".box").first();
+        let boxClass = $(box).attr("class");
+        let goatClass = $(this).attr("class");
+        let goatPosition = "";
+        boxClass = boxClass.split(" ");
+        goatClass = goatClass.split(" ");
+        goatPosition = "." + boxClass[1] + " ." + goatClass[1];
+        if (turn === "goat") {
+          placeGoat(goatPosition);
+          let availableTigerPosition = checkIfTigerCornered();
+          console.log(availableTigerPosition);
+          if (availableTigerPosition === 0) {
+            setTimeout(function () {
+              alert("Game Over! Goat Won");
+            }, 1000);
+          }
+        } else {
+          placeTiger(goatPosition);
+        }
+      });
+
+      $(document).on("click", ".goat", function () {
+        if (goatCount === 0 && turn === "goat") {
+          $(".goat").removeClass("selected");
+          $(this).addClass("selected");
+        }
+      });
+
+      $(document).on("click", ".tiger", function () {
+        if (turn === "tiger") {
+          $(".tiger").removeClass("selected");
+          $(this).addClass("selected");
+        }
+      });
+    </script>
+    <script>
+      let board = $(document).find(".board");
+      let v_width = $("body").width();
+      if (v_width < 912) {
+        board.css("width", v_width - 50);
+        board.css("height", v_width + v_width * 0.1);
+      }
+      if (v_width < 400) {
+        board.css("width", v_width - 30);
+        board.css("height", v_width + v_width * 0.2);
+      }
+    </script>
+    <script>
+      $(".invite").click(function () {
+          console.log('invite')
+        FBInstant.context.chooseAsync().then(function () {
+          console.log(FBInstant.context.getID());
+          // 1234567890
+        });
+      });
+    </script>
+  </body>
+</html>

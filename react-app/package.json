@@ -1,0 +1,51 @@
+{
+  "name": "react-app",
+  "version": "0.1.0",
+  "homepage": ".",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "archiver": "^5.3.0",
+    "firebase": "^8.6.5",
+    "jquery": "^3.6.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "request": "^2.88.2",
+    "web-vitals": "^1.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "node ./build-non-split.js && npm run build:clean && npm run move:config",
+    "build:clean": "cd build && mv static/css/*.css static/css/main.css",
+    "move:config": "cp fbapp-config.json build/fbapp-config.json && npm run rename-css && npm run zip",
+    "rename-css": "node rename-css.js",
+    "zip": "node zip-dir.js",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "rewire": "^5.0.0"
+  }
+}

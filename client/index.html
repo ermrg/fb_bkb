@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Baagchal Ko Baadshah</title>
+
+    <script src="https://connect.facebook.net/en_US/fbinstant.6.2.js"></script>
+    <script>
+      window.onload = function () {
+        FBInstant.initializeAsync()
+          .then(function () {
+            FBInstant.setLoadingProgress(100);
+            console.log("initializeAsync called");
+            FBInstant.startGameAsync()
+              .then(function () {
+                console.log("startGameAsync called");
+
+                //
+                // Bot data
+                //
+                var entryPointData = FBInstant.getEntryPointData();
+                console.log("entryPointData", entryPointData);
+                if (entryPointData) {
+                  showMessage(
+                    "bot-payload-content",
+                    JSON.stringify(entryPointData)
+                  );
+                } else {
+                  showMessage("bot-payload-content", "No data");
+                }
+
+                //
+                // Backend game data
+                //
+                var contextId = getOrCreateContextId();
+                console.log("Going to retrieve backend data");
+
+                // Signing context ID
+                FBInstant.startGameAsync().then(function () {
+                  // Retrieving context and player information can only be done
+                  // once startGameAsync() resolves
+                  var contextId = FBInstant.context.getID();
+                  var contextType = FBInstant.context.getType();
+
+                  var playerName = FBInstant.player.getName();
+                  var playerPic = FBInstant.player.getPhoto();
+                  var playerId = FBInstant.player.getID();
+
+                  // Once startGameAsync() resolves it also means the loading view has
+                  // been removed and the user can see the game viewport
+
+                //   game.start();
+                });
+              })
+              .catch((e) => {
+                console.log("Error in Start Game Async", e);
+              });
+          })
+          .catch((e) => {
+            console.log("Error in initialization", e);
+          });
+      };
+    </script>
+  </head>
+  <body>
+    <a href="index2.html">Index2 </a>
+  </body>
+</html>
