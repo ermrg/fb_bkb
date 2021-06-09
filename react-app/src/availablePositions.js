@@ -27,7 +27,7 @@ export const  availablePositions = {
         '.box13 .p4': ['.box13 .p1', '.box14 .p1', '.box14 .p4'],
         '.box14 .p4': ['.box13 .p4', '.box14 .p1', '.box15 .p4'],
         '.box15 .p4': ['.box14 .p4', '.box15 .p1', '.box16 .p1', '.box16 .p4', '.box15 .p4'],
-        '.box16 .p4': ['.box16 .p1', '.box16 .p4', '.box16 .p3'],
+        '.box16 .p4': ['.box16 .p1', '.box15 .p4', '.box16 .p3'],
         '.box16 .p3': ['.box16 .p1', '.box16 .p2', '.box16 .p4'],
     },
     'feedPosition': {
@@ -162,6 +162,10 @@ export const  availablePositions = {
             {
                 'destination': '.box16 .p2',
                 'food': '.box12 .p2'
+            },
+            {
+                'destination': '.box15 .p1',
+                'food': '.box12 .p1'
             }
         ],
 

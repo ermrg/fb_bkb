@@ -1,15 +1,22 @@
 @font-face {
-  font-family: 'Luckiest Guy', cursive;
-  src: URL('font.ttf') format('truetype');
+  font-family: "Luckiest Guy", cursive;
+  src: URL("font.ttf") format("truetype");
 }
-body{
-  background-color: #ffefea;
-  font-family: 'Luckiest Guy', cursive;
+body {
+  background-image: linear-gradient(to bottom right, #3f51b5, #e91e63);
+  height: 100vh;
+  overflow: hidden;
+}
+#root {
+  height: 100%;
 }
 .home-wrapper {
-  height: fit-content;
   overflow: hidden;
-  margin-top: 80px;
+  background-image: linear-gradient(to bottom right, #3f51b5, #e91e63);
+  height: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding-top: 80px;
 }
 
 .info {
@@ -25,12 +32,16 @@ body{
 
 .title {
   font-size: 45px;
-  color: #ff9800;
+  color: #fff;
   position: relative;
   width: fit-content;
   margin: auto;
   /* background-image: url("./images/title-background.gif' %}"); */
-  text-shadow: 2px 2px 2px #305cfa, 3px 3px 3px #ef961a;
+  /* text-shadow: 2px 2px 2px #305cfa, 3px 3px 3px #ef961a; */
+}
+.title p {
+  margin: 0;
+  font-size: 23px;
 }
 
 .second-line {
@@ -99,7 +110,7 @@ body{
 }
 .title input {
   height: 50px;
-  border: 2px solid #FF9800;
+  border: 2px solid #ff9800;
   padding: 10px;
   color: #ef961a;
   font-size: 26px;
@@ -107,15 +118,15 @@ body{
   outline: none;
   border-radius: 40px;
   text-align: center;
-  font-family: 'Luckiest Guy';
+  font-family: "Luckiest Guy";
 }
 
-.title .create-game {
+.create-game {
   margin: auto;
   padding: 10px 15px;
   border-radius: 5px;
   text-transform: uppercase;
-  font-family: 'Luckiest Guy';
+  font-family: "Luckiest Guy";
   letter-spacing: 4px;
   line-height: 33px;
   border-color: #ef961a;
@@ -124,7 +135,7 @@ body{
   background: #fffbd7;
   cursor: pointer;
 }
-.title .create-game a{
+.title .create-game a {
   text-decoration: none;
   color: inherit;
 }
@@ -135,8 +146,7 @@ body{
 }
 
 .game-room .title {
-
-  color: #FF9800;
+  color: #ff9800;
   position: relative;
   margin: auto;
   display: flex;
@@ -152,7 +162,7 @@ body{
 
 .game-room .title input {
   height: 50px;
-  border: 2px solid #FF9800;
+  border: 2px solid #ff9800;
   padding: 10px;
   color: #ef961a;
   font-size: 26px;
@@ -160,7 +170,7 @@ body{
   outline: none;
   border-radius: 40px;
   text-align: center;
-  font-family: 'Luckiest Guy';
+  font-family: "Luckiest Guy";
 }
 
 .game-room .title .start-match {
@@ -168,7 +178,7 @@ body{
   padding: 10px 15px;
   border-radius: 5px;
   text-transform: uppercase;
-  font-family: 'Luckiest Guy';
+  font-family: "Luckiest Guy";
   letter-spacing: 4px;
   line-height: 33px;
   border-color: #ef961a;
@@ -183,7 +193,8 @@ body{
   /* display: none; */
 }
 
-.game-room .friends, .waiting {
+.game-room .friends,
+.waiting {
   padding: 20px;
   border-radius: 20px;
   background-color: #fff;
@@ -256,7 +267,7 @@ body{
 
 .tiger.selected img {
   border-radius: 50%;
-  box-shadow: 0px 0px 8px 4px #bbb;
+  box-shadow: 0px 0px 8px 4px #3d3d3d;
   background: #800000;
   height: 70px;
 }
@@ -281,8 +292,8 @@ body{
   align-items: center;
   cursor: pointer;
   position: absolute;
-  top: -2px;
-  left: 0px;
+  top: -4px;
+  left: -3px;
   z-index: 1;
 }
 
@@ -296,26 +307,33 @@ body{
   width: 850px;
   margin: auto;
   flex-wrap: wrap;
-  background: #fff;
+  /* background: #fff; */
   justify-content: center;
+  background-image: linear-gradient(to right, #412f28, #9e9e9e, #412f28);
+  border: 10px solid #250a00;
+  border-radius: 10px;
+  padding: 50px;
+  margin: 15px;
+  position: relative;
 }
 
 .score {
   position: absolute;
-  left: 10px;
+  left: 15px;
   font-size: 18px;
-  font-weight: bold;
-  color: green;
+  font-weight: bolder;
+  color: #cbffcb;
+  top: 15px;
 }
 
 .goatTurn .box {
-  border-color: #1500ff;
-  background-color: #ffeb3b78 !important;
+  border-color: #795548;
+  background-color: #b39a91 !important;
 }
 
 .tigerTurn .box {
-  border-color: red;
-  background-color: #ff00001c !important;
+  border-color: #795548;
+  background-color: #b39a91 !important;
 }
 
 .box {
@@ -325,40 +343,40 @@ body{
   position: relative;
 }
 
-.tigerTurn .box:nth-child(1), .tigerTurn .box:nth-child(3), .tigerTurn .box:nth-child(6), .tigerTurn .box:nth-child(8), .tigerTurn .box:nth-child(9), .tigerTurn .box:nth-child(14), .tigerTurn .box:nth-child(11), .tigerTurn .box:nth-child(16) {
-  background: linear-gradient(to top right,
-  rgba(0, 0, 0, 0) 0%,
-  rgba(0, 0, 0, 0) calc(50% - 0.8px),
-  red 50%,
-  rgba(0, 0, 0, 0) calc(50% + 0.8px),
-  rgba(0, 0, 0, 0) 100%);
+.box:nth-child(1),
+.box:nth-child(3),
+.box:nth-child(6),
+.box:nth-child(8),
+.box:nth-child(9),
+.box:nth-child(14),
+.box:nth-child(11),
+.box:nth-child(16) {
+  background: linear-gradient(
+    to top right,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) calc(50% - 0.8px),
+    #795548 50%,
+    rgba(0, 0, 0, 0) calc(50% + 0.8px),
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
-.goatTurn .box:nth-child(1), .goatTurn .box:nth-child(3), .goatTurn .box:nth-child(6), .goatTurn .box:nth-child(8), .goatTurn .box:nth-child(9), .goatTurn .box:nth-child(14), .goatTurn .box:nth-child(11), .goatTurn .box:nth-child(16) {
-  background: linear-gradient(to top right,
-  rgba(0, 0, 0, 0) 0%,
-  rgba(0, 0, 0, 0) calc(50% - 0.8px),
-  #1500ff 50%,
-  rgba(0, 0, 0, 0) calc(50% + 0.8px),
-  rgba(0, 0, 0, 0) 100%);
-}
-
-.goatTurn .box:nth-child(2), .goatTurn .box:nth-child(4), .goatTurn .box:nth-child(5), .goatTurn .box:nth-child(7), .goatTurn .box:nth-child(10), .goatTurn .box:nth-child(12), .goatTurn .box:nth-child(13), .goatTurn .box:nth-child(15) {
-  background: linear-gradient(to top left,
-  rgba(0, 0, 0, 0) 0%,
-  rgba(0, 0, 0, 0) calc(50% - 0.8px),
-  #1500ff 50%,
-  rgba(0, 0, 0, 0) calc(50% + 0.8px),
-  rgba(0, 0, 0, 0) 100%);
-}
-
-.tigerTurn .box:nth-child(2), .tigerTurn .box:nth-child(4), .tigerTurn .box:nth-child(5), .tigerTurn .box:nth-child(7), .tigerTurn .box:nth-child(10), .tigerTurn .box:nth-child(12), .tigerTurn .box:nth-child(13), .tigerTurn .box:nth-child(15) {
-  background: linear-gradient(to top left,
-  rgba(0, 0, 0, 0) 0%,
-  rgba(0, 0, 0, 0) calc(50% - 0.8px),
-  red 50%,
-  rgba(0, 0, 0, 0) calc(50% + 0.8px),
-  rgba(0, 0, 0, 0) 100%);
+.box:nth-child(2),
+.box:nth-child(4),
+.box:nth-child(5),
+.box:nth-child(7),
+.box:nth-child(10),
+.box:nth-child(12),
+.box:nth-child(13),
+.box:nth-child(15) {
+  background: linear-gradient(
+    to top left,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) calc(50% - 0.8px),
+    #795548 50%,
+    rgba(0, 0, 0, 0) calc(50% + 0.8px),
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 .box .p {
@@ -373,15 +391,15 @@ body{
 }
 
 .goatTurn .box .p {
-  background-color: #1500ff;
+  background-color: #795548;
 }
 
 .tigerTurn .box .p {
-  background-color: red;
+  background-color: #795548;
 }
 
 .box .p:hover {
-  background-color: red;
+  background-color: #795548;
   cursor: pointer;
 }
 
@@ -405,25 +423,64 @@ body{
   left: -8px;
 }
 
-.box1 > .p2, .box1 > .p3, .box2 > .p2, .box2 > .p3, .box3 > .p2, .box3 > .p3,
-.box5 > .p2, .box5 > .p3, .box6 > .p2, .box6 > .p3, .box7 > .p2, .box7 > .p3,
-.box9 > .p2, .box9 > .p3, .box10 > .p2, .box10 > .p3, .box11 > .p2, .box11 > .p3,
-.box13 > .p2, .box13 > .p3, .box14 > .p2, .box14 > .p3, .box15 > .p2, .box15 > .p3 {
+.box1 > .p2,
+.box1 > .p3,
+.box2 > .p2,
+.box2 > .p3,
+.box3 > .p2,
+.box3 > .p3,
+.box5 > .p2,
+.box5 > .p3,
+.box6 > .p2,
+.box6 > .p3,
+.box7 > .p2,
+.box7 > .p3,
+.box9 > .p2,
+.box9 > .p3,
+.box10 > .p2,
+.box10 > .p3,
+.box11 > .p2,
+.box11 > .p3,
+.box13 > .p2,
+.box13 > .p3,
+.box14 > .p2,
+.box14 > .p3,
+.box15 > .p2,
+.box15 > .p3 {
   right: -10px !important;
 }
 
-.box1 > .p4, .box1 > .p3, .box2 > .p4, .box2 > .p3, .box3 > .p4, .box3 > .p3, .box4 > .p4, .box4 > .p3,
-.box5 > .p4, .box5 > .p3, .box6 > .p4, .box6 > .p3, .box7 > .p4, .box7 > .p3, .box8 > .p4, .box8 > .p3,
-.box9 > .p4, .box9 > .p3, .box10 > .p4, .box10 > .p3, .box11 > .p4, .box11 > .p3,
-.box12 > .p3, .box12 > .p4 {
+.box1 > .p4,
+.box1 > .p3,
+.box2 > .p4,
+.box2 > .p3,
+.box3 > .p4,
+.box3 > .p3,
+.box4 > .p4,
+.box4 > .p3,
+.box5 > .p4,
+.box5 > .p3,
+.box6 > .p4,
+.box6 > .p3,
+.box7 > .p4,
+.box7 > .p3,
+.box8 > .p4,
+.box8 > .p3,
+.box9 > .p4,
+.box9 > .p3,
+.box10 > .p4,
+.box10 > .p3,
+.box11 > .p4,
+.box11 > .p3,
+.box12 > .p3,
+.box12 > .p4 {
   bottom: -10px !important;
 }
-.loading{
+.loading {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  opacity: 0.5;
-  background-color: grey;
+  background-color: #fff6;
   position: absolute;
   top: 0;
   left: 0;
@@ -432,153 +489,231 @@ body{
   justify-content: center;
   align-items: center;
   font-size: 40px;
+  color: #ff6000;
+  font-weight: bold;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes grow {
+  from {
+      transform:scale(0.5);
+  }
+  to {
+      transform:scale(1);
+  }
+}
+.just-moved {
+  animation-name: spin;
+  animation-duration: 8000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+.turn-player {
+  animation-name: grow;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 }
 
+.playerInfo {
+  position: absolute;
+}
+.playerPlayer {
+  bottom: -63px;
+  left: -10px;
+  display: flex;
+  flex-direction: column-reverse;
+}
+.playerOpponent {
+  top: -63px;
+  right: -8px;
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+.role {
+  font-size: 16px;
+  text-transform: uppercase;
+}
+.name-image {
+  display: flex;
+  align-items: center;
+}
+.playerPlayer .name-image {
+  flex-direction: row-reverse;
+}
+.name-image .name {
+  margin: 5px;
+  font-weight: bold;
+  color: #fff;
+}
+.playerInfo .name-image .image {
+  height: 35px;
+  width: 35px;
+  border-radius: 5px;
+}
+.playerInfo .name-image .image img {
+  height: 100%;
+  border-radius: 50%;
+}
+.navigation{
+  position: absolute;
+    right: 10px;
+    top: 10px;
+    font-weight: bold;
+    color: #fff;
+}
+.navigation a{
+  color: #fff;
+  text-decoration: none;
+}
 @media only screen and (max-width: 768px) {
-
   .tiger img {
-      height: 50px;
+    height: 50px;
   }
 
   .goat img {
-      height: 40px;
+    height: 40px;
   }
 
   .tiger.selected img {
-      height: 60px;
+    height: 60px;
   }
 
   .goat.selected img {
-      height: 45px;
+    height: 45px;
   }
 }
 
 @media only screen and (max-width: 600px) {
-
   .tiger img {
-      height: 45px;
+    height: 45px;
   }
 
   .goat img {
-      height: 40px;
+    height: 40px;
   }
 
   .tiger.selected img {
-      height: 55px;
+    height: 55px;
   }
 
   .goat.selected img {
-      height: 45px;
+    height: 45px;
   }
 }
 
 @media only screen and (max-width: 650px) {
-
   .tiger img {
-      height: 45px;
+    height: 45px;
   }
 
   .goat img {
-      height: 40px;
+    height: 40px;
   }
 
   .tiger.selected img {
-      height: 55px;
+    height: 55px;
   }
 
   .goat.selected img {
-      height: 45px;
+    height: 45px;
   }
 }
 
 @media only screen and (max-width: 500px) {
-
   .tiger img {
-      height: 40px;
+    height: 40px;
   }
 
   .goat img {
-      height: 35px;
+    height: 35px;
   }
 
   .tiger.selected img {
-      height: 50px;
+    height: 50px;
   }
 
   .goat.selected img {
-      height: 35px;
+    height: 35px;
   }
 }
 
 @media only screen and (max-width: 400px) {
-
   .tiger img {
-      height: 35px;
+    height: 35px;
   }
 
   .goat img {
-      height: 30px;
+    height: 30px;
   }
 
   .tiger.selected img {
-      height: 45px;
+    height: 45px;
   }
 
   .goat.selected img {
-      height: 35px;
+    height: 35px;
   }
 
   .home .title {
-      font-size: 38px;
-      padding: 0;
-      width: 100vw;
-      margin: 0;
+    font-size: 38px;
+    padding: 0;
+    width: 100vw;
+    margin: 0;
   }
 
   .info .crown {
-      height: 80px;
-      width: 80px;
-      margin-top: -80px;
+    height: 80px;
+    width: 80px;
+    margin-top: -80px;
   }
 
-  .menu a, .sub-menu a {
-      font-size: 16px;
+  .menu a,
+  .sub-menu a {
+    font-size: 16px;
   }
 }
 
 @media only screen and (max-width: 300px) {
-
   .tiger img {
-      height: 30px;
+    height: 30px;
   }
 
   .goat img {
-      height: 30px;
+    height: 30px;
   }
 
   .tiger.selected img {
-      height: 40px;
+    height: 40px;
   }
 
   .goat.selected img {
-      height: 35px;
+    height: 35px;
   }
 
   .home .title {
-      font-size: 32px;
-      padding: 0;
-      width: 100vw;
-      margin: 0;
+    font-size: 32px;
+    padding: 0;
+    width: 100vw;
+    margin: 0;
   }
 
   .info .crown {
-      height: 70px;
-      width: 70px;
-     margin-top: -70px;
+    height: 70px;
+    width: 70px;
+    margin-top: -70px;
   }
 
-  .menu a, .sub-menu a {
-      font-size: 14px;
-      letter-spacing: normal;
+  .menu a,
+  .sub-menu a {
+    font-size: 14px;
+    letter-spacing: normal;
   }
 }

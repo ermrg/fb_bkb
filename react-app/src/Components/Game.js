@@ -3,23 +3,23 @@ import { availablePositions } from "../availablePositions.js";
 import goat from "../images/goat.png";
 import tiger from "../images/tiger.png";
 import $ from "jquery";
-
+let boardW;
+let boardH;
+let turn = "goat";
+let goatCount = 20;
+let tigerCount = 4;
+let eatenScore = 0;
+let maxNoOfGoatEatenToFinishGame = 5;
+let LocalAvailablePositions = availablePositions.movePositon;
+let LocalFeedPositions = availablePositions.feedPosition;
 export default function Game() {
-  let boardW;
-  let boardH;
-  let turn = "goat";
-  let goatCount = 20;
-  let tigerCount = 4;
-  let eatenScore = 0;
-  let maxNoOfGoatEatenToFinishGame = 5;
-  let LocalAvailablePositions = availablePositions.movePositon;
-  let LocalFeedPositions = availablePositions.feedPosition;
+  const [turn, setTurn] = useState('goat')
   useEffect(() => {
     placeTiger(".box1 .p1");
     placeTiger(".box4 .p2");
     placeTiger(".box13 .p4");
     placeTiger(".box16 .p3");
-  }, [])
+  }, []);
   function goatClicked(e) {
     // e.stopPropagation();
     console.log("goat Clicker");
@@ -59,12 +59,12 @@ export default function Game() {
         let ifAlreadyGoatExit = $(positionClass).find(".goat");
         let ifAlreadyTigerExit = $(positionClass).find(".tiger");
         if ($(ifAlreadyGoatExit).length + $(ifAlreadyTigerExit).length === 0) {
-          let value = $(document).find(".tiger.selected").html();
+          let value = $(document).find(".tiger.selected").attr("data-num");
           console.log($(document).find(".tiger.selected").length);
 
           $(document).find(".tiger.selected").remove();
           let t =
-            `<div class="tiger tiger${tiger}"><img class="tiger-image" src="` +
+            `<div data-num="${value}" class="tiger tiger${value}"><img class="tiger-image just-moved" src="` +
             tiger +
             `"/></div>`;
           $(positionClass).append(t);
@@ -76,13 +76,13 @@ export default function Game() {
     } else {
       if (tigerCount > 0) {
         let t =
-          `<div class="tiger tiger` +
+          `<div  data-num="${tigerCount}" class="tiger tiger` +
           tigerCount +
           `"><img class="tiger-image" src="` +
           tiger +
           `" /></div>`;
         $(positionClass).append(t);
-        switchTurn();
+        // switchTurn();
         tigerCount--;
       }
     }
@@ -98,7 +98,7 @@ export default function Game() {
         if (goatCount > 0) {
           let goatClass = "goat goat" + goatCount;
           let t =
-            `<div class="${goatClass}"><img class="goat-image" src="` +
+            `<div class="${goatClass}"><img class="goat-image just-moved" src="` +
             goat +
             `"/></div>`;
           $(positionClass).append(t);
@@ -123,7 +123,7 @@ export default function Game() {
           let value = $(document).find(".goat.selected").html();
           $(document).find(".goat.selected").remove();
           let t =
-            `<div class="goat selected"><img class="goat-image" src="` +
+            `<div class="goat selected just-moved"><img class="goat-image" src="` +
             goat +
             `"/> </div>`;
           $(positionClass).append(t);
@@ -187,11 +187,11 @@ export default function Game() {
 
   function switchTurn() {
     if (turn === "tiger") {
-      turn = "goat";
+      setTurn("goat");
       $(".board").removeClass("tigerTurn").addClass("goatTurn");
       $(".tiger").removeClass("selected");
     } else {
-      turn = "tiger";
+      setTurn("tiger");
       $(".board").removeClass("goatTurn").addClass("tigerTurn");
       $(".goat").removeClass("selected");
     }
@@ -229,6 +229,8 @@ export default function Game() {
   }
 
   function positionClicked(e) {
+    $(".just-moved").removeClass("just-moved");
+
     if (e.target.nodeName === "IMG") {
       let cls = $(e.target).attr("class");
       if (cls.indexOf("tiger") >= 0) {
@@ -248,7 +250,6 @@ export default function Game() {
     if (turn === "goat") {
       placeGoat(goatPosition);
       let availableTigerPosition = checkIfTigerCornered();
-      console.log(availableTigerPosition);
       if (availableTigerPosition === 0) {
         setTimeout(function () {
           alert("Game Over! Goat Won");
@@ -262,15 +263,18 @@ export default function Game() {
   let v_width = $("body").width();
   if (v_width < 912) {
     boardW = v_width - 50;
-    boardH = v_width + v_width * 0.1;
+    boardH = boardW;
   }
   if (v_width < 400) {
     boardW = v_width - 30;
-    boardH = v_width + v_width * 0.2;
+    boardH = boardW - boardW * 0.1;
   }
   return (
     <div>
       <div className="board-wrapper">
+        <div className="score">
+          {eatenScore ? `Goat Eaten: ${eatenScore}` : ""}
+        </div>
         <div
           className="board goatTurn"
           style={{ height: boardH, width: boardW }}
@@ -370,6 +374,12 @@ export default function Game() {
             <div onClick={positionClicked} className="p p2"></div>
             <div onClick={positionClicked} className="p p3"></div>
             <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className={`playerOpponent playerInfo ${turn === 'tiger' ? 'turn-player' : ''}`}>
+            <div className="role">Tiger</div>
+          </div>
+          <div className={`playerPlayer playerInfo ${turn === 'goat' ? 'turn-player' : ''}`}>
+            <div className="role">Goat</div>
           </div>
         </div>
       </div>
