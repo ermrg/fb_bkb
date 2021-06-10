@@ -41,7 +41,10 @@ body {
 }
 .title p {
   margin: 0;
-  font-size: 23px;
+  font-size: 34px;
+  font-weight: bold;
+  color: #ffc107;
+  text-shadow: 4px 5px 5px black;
 }
 
 .second-line {
@@ -65,9 +68,11 @@ body {
 
 .menu a,
 .sub-menu a {
-  padding: 17px 20px;
-  background-color: #ffefea;
-  box-shadow: -1px -2px 5px 0px #ef961aa6;
+  padding: 40px 20px;
+  background-color: #fdffd5;
+  text-shadow: 1px 1px 2px;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 9px 4px #795548;
   text-decoration: none;
   border-radius: 9px;
   transition: all 0.2s;
@@ -84,7 +89,7 @@ body {
 
 .menu .sub-menu {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   padding: 5px 20px;
 }
 
@@ -140,40 +145,7 @@ body {
   color: inherit;
 }
 
-.game-room .info {
-  text-align: center;
-  width: 100%;
-}
-
-.game-room .title {
-  color: #ff9800;
-  position: relative;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.game-room .second-line {
-  letter-spacing: 7px;
-  margin-top: 22px;
-  font-size: 50px;
-  text-shadow: 2px 2px 2px #305cfa, 3px 3px 3px #ef961a;
-}
-
-.game-room .title input {
-  height: 50px;
-  border: 2px solid #ff9800;
-  padding: 10px;
-  color: #ef961a;
-  font-size: 26px;
-  margin-bottom: 10px;
-  outline: none;
-  border-radius: 40px;
-  text-align: center;
-  font-family: "Luckiest Guy";
-}
-
-.game-room .title .start-match {
+.game-room .start-match {
   margin: auto;
   padding: 10px 15px;
   border-radius: 5px;
@@ -189,37 +161,62 @@ body {
   margin-top: 20px;
 }
 
-.game-room .start-match {
-  /* display: none; */
+.game-room {
+  display: flex;
+  justify-content: center;
+}
+.game-option {
+  text-align: center;
 }
 
-.game-room .friends,
-.waiting {
-  padding: 20px;
+.game-room .friends {
+  padding: 40px 50px;
   border-radius: 20px;
   background-color: #fff;
-  height: 100px;
   border: 1px solid grey;
   margin: 20px 5px;
   position: relative;
   font-size: 16px;
+  width: fit-content;
 }
 
-.game-room .friends {
-  /* display: none; */
+.friend {
+  display: flex;
+  margin-bottom: 20px;
+}
+.thumbnail {
+  margin-right: 10px;
+  border: 2px solid #92408d;
+  height: 50px;
+  width: 50px;
+  border-radius: 8px;
+}
+.thumbnail img {
+  height: 100%;
+  border-radius: 8px;
+}
+.name-wrapper {
+  font-size: 20px;
 }
 
 .game-room .switch {
-  position: absolute;
-  bottom: 10px;
+  bottom: 16px;
   text-align: center;
-  width: 100%;
   left: 0;
   cursor: pointer;
+  border: 1px solid #ff5722;
+  margin: auto;
+  width: fit-content;
+  padding: 5px 20px;
+  border-radius: 15px;
+  background: #ff5722;
+  color: #fff;
+  font-weight: bold;
 }
 
 .game-room .friend .name .player {
-  color: darkslategrey;
+  color: #ff5722;
+  text-transform: uppercase;
 }
 
 .game-room .share {
@@ -310,10 +307,10 @@ body {
   /* background: #fff; */
   justify-content: center;
   background-image: linear-gradient(to right, #412f28, #9e9e9e, #412f28);
-  border: 10px solid #250a00;
-  border-radius: 10px;
-  padding: 50px;
-  margin: 15px;
+  border: 5px solid #250a00;
+  border-radius: 5px;
+  padding: 25px 20px 30px 20px;
+  margin: 7px;
   position: relative;
 }
 
@@ -480,16 +477,17 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: #fff6;
+  background-color: #000000e0;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 5555;
   display: flex;
+  text-shadow: 2px 3px 4px #ff5722;
   justify-content: center;
   align-items: center;
   font-size: 40px;
-  color: #ff6000;
+  color: #fff;
   font-weight: bold;
 }
 @keyframes spin {
@@ -502,10 +500,10 @@ body {
 }
 @keyframes grow {
   from {
-      transform:scale(0.5);
+    transform: scale(0.5);
   }
   to {
-      transform:scale(1);
+    transform: scale(1);
   }
 }
 .just-moved {
@@ -562,16 +560,62 @@ body {
   height: 100%;
   border-radius: 50%;
 }
-.navigation{
+.navigation {
   position: absolute;
-    right: 10px;
-    top: 10px;
-    font-weight: bold;
-    color: #fff;
+  right: 10px;
+  top: 10px;
+  font-weight: bold;
+  color: #fff;
 }
-.navigation a{
+.navigation a {
   color: #fff;
   text-decoration: none;
+}
+.winner-popup {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 555;
+  background: #000000cc;
+}
+.winner-popup .message-wrapper {
+  background-color: #fff;
+  padding: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 20px;
+  margin: 25px;
+}
+.message-wrapper .message {
+  font-size: 22px;
+  font-weight: bold;
+  color: darkslategray;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.message-wrapper .winner-options {
+  display: flex;
+  justify-content: center;
+}
+.winner-options .winner-option {
+  border: 1px solid #bbb;
+  border-radius: 15px;
+  padding: 5px 20px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+.winner-option.rematch {
+  background-color: darkslategray;
+  color: #fff;
+  border-color: darkslategray;
+}
+.winner-option.rematch.disable {
+  cursor: not-allowed;
 }
 @media only screen and (max-width: 768px) {
   .tiger img {

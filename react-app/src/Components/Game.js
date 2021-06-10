@@ -3,6 +3,7 @@ import { availablePositions } from "../availablePositions.js";
 import goat from "../images/goat.png";
 import tiger from "../images/tiger.png";
 import $ from "jquery";
+import WinnerPopup from "./WinnerPopup.js";
 let boardW;
 let boardH;
 let turn = "goat";
@@ -14,6 +15,7 @@ let LocalAvailablePositions = availablePositions.movePositon;
 let LocalFeedPositions = availablePositions.feedPosition;
 export default function Game() {
   const [turn, setTurn] = useState('goat')
+  const [winner, setWinner] = useState('')
   useEffect(() => {
     placeTiger(".box1 .p1");
     placeTiger(".box4 .p2");
@@ -181,7 +183,7 @@ export default function Game() {
     eatenScore++;
     $(".score").html(eatenScore);
     if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
-      alert("Game Over, Tiger Won");
+      playWinnerVictory('tiger')
     }
   }
 
@@ -230,7 +232,6 @@ export default function Game() {
 
   function positionClicked(e) {
     $(".just-moved").removeClass("just-moved");
-
     if (e.target.nodeName === "IMG") {
       let cls = $(e.target).attr("class");
       if (cls.indexOf("tiger") >= 0) {
@@ -252,14 +253,16 @@ export default function Game() {
       let availableTigerPosition = checkIfTigerCornered();
       if (availableTigerPosition === 0) {
         setTimeout(function () {
-          alert("Game Over! Goat Won");
+          playWinnerVictory('goat')
         }, 1000);
       }
     } else {
       placeTiger(goatPosition);
     }
   }
-
+  function playWinnerVictory(winner) {
+    setWinner(winner)
+  }
   let v_width = $("body").width();
   if (v_width < 912) {
     boardW = v_width - 50;
@@ -267,7 +270,7 @@ export default function Game() {
   }
   if (v_width < 400) {
     boardW = v_width - 30;
-    boardH = boardW - boardW * 0.1;
+    boardH = boardW + boardW * 0.1;
   }
   return (
     <div>
@@ -275,6 +278,7 @@ export default function Game() {
         <div className="score">
           {eatenScore ? `Goat Eaten: ${eatenScore}` : ""}
         </div>
+        {winner && <WinnerPopup winner={winner}/>}
         <div
           className="board goatTurn"
           style={{ height: boardH, width: boardW }}

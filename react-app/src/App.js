@@ -2,15 +2,15 @@ import React, { Component } from "react";
 import { HashRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Home from "./Components/Home";
 import "./App.css";
-import CreateGame from "./Components/CreateGame";
 import GameRoom from "./Components/GameRoom";
 import Game from "./Components/Game";
 import Practice from "./Components/Practice";
 import firebase from "./Firebase";
 import GameMultuplayer from "./Components/GameMultiplayer";
+import Loading from "./Components/Loading";
 
 export default class App extends Component {
-  state = { redirectTo: "", gameId: "" };
+  state = { redirectTo: "", gameId: "", loading: true };
   // }
   componentDidMount() {
     var s = document.createElement("script");
@@ -33,38 +33,45 @@ export default class App extends Component {
               .get();
             if (gameDoc.exists) {
               let game = gameDoc.data();
-              let player = window.FBInstant.player;
-              await ref
-                .doc(contextId)
-                .collection("match")
-                .doc(entryPointData.gameId)
-                .set({
-                  ...game,
-                  playerTwoId: player.getID(),
-                  playerTwoName: player.getName(),
-                  playerTwoPhoto: player.getPhoto(),
-                  playerTwoRole: "goat",
-                  hasJoined: true,
+              if (game.hasFinished != true && game.exited != true) {
+                let player = window.FBInstant.player;
+                await ref
+                  .doc(contextId)
+                  .collection("match")
+                  .doc(entryPointData.gameId)
+                  .set({
+                    ...game,
+                    playerTwoId: player.getID(),
+                    playerTwoName: player.getName(),
+                    playerTwoPhoto: player.getPhoto(),
+                    playerTwoRole: "goat",
+                    hasJoined: true,
+                  });
+                this.setState({
+                  redirectTo: "game-room",
+                  gameId: entryPointData.gameId,
+                  loading: false,
                 });
-              this.setState({
-                redirectTo: "game-room",
-                gameId: entryPointData.gameId,
-              });
+              } else {
+                console.log("Game already finished");
+              }
+            } else {
+              console.log("Game not found");
             }
           }
+          this.setState({
+            loading: false,
+          });
         });
       });
     };
   }
 
   render() {
-    console.log("State", this.state);
     return (
       <Router>
+        {this.state.loading && <Loading />}
         <Switch>
-          <Route path="/create-game">
-            <CreateGame />
-          </Route>
           <Route exact path="/game-room">
             <GameRoom />
           </Route>
@@ -79,9 +86,9 @@ export default class App extends Component {
           </Route>
           <Route path="/">
             <Home
-                redirectTo={this.state.redirectTo}
-                gameId={this.state.gameId}
-              />
+              redirectTo={this.state.redirectTo}
+              gameId={this.state.gameId}
+            />
           </Route>
         </Switch>
       </Router>

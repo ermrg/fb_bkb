@@ -1,11 +1,12 @@
-import React, { Component, useEffect } from "react";
+import React, { Component, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import firebase from "../Firebase";
 import tigerLogo from "../images/tiger_1024x1024.png";
-
+import Loading from "./Loading";
 
 export default function Home(props) {
   const { redirectTo, gameId } = props;
+  const [ loading, setLoading ] = useState(false);
   const history = useHistory();
   if (redirectTo === "game-room") {
     history.push({
@@ -17,8 +18,8 @@ export default function Home(props) {
   const CreateGameToFirestore = async () => {
     let contextId = window.FBInstant.context.getID();
     let ref = firebase.firestore().collection("matches");
-
-    let res = await ref
+    setLoading(true);
+    await ref
       .doc(contextId)
       .collection("match")
       .add({
@@ -31,10 +32,13 @@ export default function Home(props) {
         turn: "goat",
       })
       .then(async (res) => {
-        let base64Imge = await getBase64FromUrl(window.FBInstant.player.getPhoto())
+        let base64Imge = await getBase64FromUrl(
+          window.FBInstant.player.getPhoto()
+        );
+
         window.FBInstant.updateAsync({
           action: "CUSTOM",
-          cta: "Play Baagchaal",
+          cta: "Play Now",
           template: "join_fight",
           image: base64Imge,
           text: `${window.FBInstant.player.getName()} Challaged You`,
@@ -45,7 +49,7 @@ export default function Home(props) {
           notification: "NO_PUSH",
         })
           .then(function () {
-            console.log("Update Async Finished", res.id);
+            setLoading(false);
             history.push({
               pathname: "/game-room",
               state: { gameId: res.id },
@@ -54,6 +58,8 @@ export default function Home(props) {
           .catch(function (err) {
             console.error("Update Async error", err);
           });
+      }).catch(function (err) {
+        console.error("Can not get data", err);
       });
   };
   const InviteFirednd = () => {
@@ -68,15 +74,16 @@ export default function Home(props) {
     const blob = await data.blob();
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.readAsDataURL(blob); 
+      reader.readAsDataURL(blob);
       reader.onloadend = () => {
-        const base64data = reader.result;   
+        const base64data = reader.result;
         resolve(base64data);
-      }
+      };
     });
-  }
+  };
   return (
     <div className="home-wrapper home">
+      {loading && <Loading />}
       <div className="info">
         <div className="title">
           <img src={tigerLogo} height="250" width="250" />
@@ -91,9 +98,7 @@ export default function Home(props) {
         <div className="menu">
           <div className="sub-menu menu">
             <Link to="/practice">Single Player</Link>
-            <a onClick={InviteFirednd}>
-              Invite Friend
-            </a>
+            <a onClick={InviteFirednd}>Invite Friend</a>
           </div>
         </div>
       </div>

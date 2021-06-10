@@ -6,21 +6,28 @@ import $ from "jquery";
 import firebase from "../Firebase";
 import Loading from "./Loading.js";
 import { useHistory } from "react-router";
-let globalSelectedGoat = "";
+import WinnerPopup from "./WinnerPopup.js";
+import { Link } from "react-router-dom";
+// let globalSelectedGoat = "";
 let globalSelectedTiger = "";
-let tigerCount = 4;
-let goatCount = 20;
+// let goatCount = 20;
+// let eatenScore = 0;
 export default function GameMultiplayer() {
+  const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
   const [player, setPlayer] = useState("");
   const [opponent, setOpponent] = useState("");
   const [enableMatch, setEnableMatch] = useState(false);
   const [turn, setTurn] = useState("goat");
+  const [winner, setWinner] = useState("");
   const [eatenScore, setEatenScore] = useState(0);
-  const history = useHistory()
+  const [goatCount, setGoatCount] = useState(20);
+  const [globalSelectedGoat, setGlobalSelectedGoat] = useState("");
+  const [globalSelectedTiger, setGlobalSelectedTiger] = useState("");
+  const history = useHistory();
   let boardW;
   let boardH;
-  let maxNoOfGoatEatenToFinishGame = 5;
+  let maxNoOfGoatEatenToFinishGame = 2;
   let LocalAvailablePositions = availablePositions.movePositon;
   let LocalFeedPositions = availablePositions.feedPosition;
   let gameId = history.location.state.gameId;
@@ -29,19 +36,13 @@ export default function GameMultiplayer() {
 
   useEffect(() => {
     getMatches();
-    placeTiger(".box1 .p1");
-    placeTiger(".box4 .p2");
-    placeTiger(".box13 .p4");
-    placeTiger(".box16 .p3");
     const unsubscribe = ref
       .doc(contextId)
       .collection("match")
       .doc(gameId)
       .onSnapshot((doc) => {
-        // console.log('Stapshor ', doc.data())
         if (doc.exists) {
           let getMatchData = doc.data();
-          console.log("game", getMatchData);
           receiveDBChange(getMatchData);
         } else {
           console.log("Game Not Found");
@@ -56,7 +57,6 @@ export default function GameMultiplayer() {
       let getMatchData = doc.data();
       setGame({ ...getMatchData });
       getPlayerRole(getMatchData);
-      // console.log(getMatchData, "getMatchData");
     }
   };
 
@@ -64,8 +64,6 @@ export default function GameMultiplayer() {
     setEnableMatch(true);
   }
   const getPlayerRole = (getMatchData) => {
-    // console.log("Data From Backend ", getMatchData);
-
     let currentPlayerId = window.FBInstant.player.getID();
     if (currentPlayerId === getMatchData.playerOneId) {
       setPlayer({
@@ -95,7 +93,6 @@ export default function GameMultiplayer() {
       });
     }
   };
-  // console.log("Game: ", game);
   function goatClicked(e) {
     // e.stopPropagation();
     if (goatCount === 0 && turn === "goat") {
@@ -106,11 +103,17 @@ export default function GameMultiplayer() {
       let selectedTigerBoxClass = $(selectedTiger)
         .closest(".box")
         .attr("class");
-      globalSelectedGoat =
+      setGlobalSelectedGoat(
         "." +
-        selectedTigerBoxClass.split(" ")[1] +
-        " ." +
-        selectedTigerClass.split(" ")[1];
+          selectedTigerBoxClass.split(" ")[1] +
+          " ." +
+          selectedTigerClass.split(" ")[1]
+      );
+      // globalSelectedGoat =
+      //   "." +
+      //   selectedTigerBoxClass.split(" ")[1] +
+      //   " ." +
+      //   selectedTigerClass.split(" ")[1];
     }
   }
 
@@ -124,18 +127,18 @@ export default function GameMultiplayer() {
       let selectedTigerBoxClass = $(selectedTiger)
         .closest(".box")
         .attr("class");
-      globalSelectedTiger =
+      setGlobalSelectedTiger(
         "." +
-        selectedTigerBoxClass.split(" ")[1] +
-        " ." +
-        selectedTigerClass.split(" ")[1];
+          selectedTigerBoxClass.split(" ")[1] +
+          " ." +
+          selectedTigerClass.split(" ")[1]
+      );
+      // globalSelectedTiger = "." + selectedTigerBoxClass.split(" ")[1] + " ." + selectedTigerClass.split(" ")[1];
     }
   }
 
   function placeTiger(positionClass) {
     let selectedTiger = $(document).find(".tiger.selected");
-    console.log("Selected Tiger Length ============", selectedTiger.length);
-
     if (selectedTiger.length) {
       let selectedTigerClass = $(selectedTiger).closest(".p").attr("class");
       let selectedTigerBoxClass = $(selectedTiger)
@@ -168,19 +171,6 @@ export default function GameMultiplayer() {
       } else {
         // console.log('Invalid Move 3')
       }
-    } else {
-      console.log("New Tiger? ============", tigerCount);
-      if (tigerCount > 0) {
-        let t =
-          `<div data-num="${tigerCount}" class="tiger tiger` +
-          tigerCount +
-          `"><img class="tiger-image" src="` +
-          tiger +
-          `" /></div>`;
-        $(positionClass).append(t);
-        // switchTurn();
-        tigerCount--;
-      }
     }
   }
 
@@ -198,7 +188,8 @@ export default function GameMultiplayer() {
             goat +
             `"/></div>`;
           $(positionClass).append(t);
-          goatCount--;
+          // goatCount--;
+          setGoatCount(goatCount - 1);
           return true;
         }
       } else {
@@ -273,9 +264,10 @@ export default function GameMultiplayer() {
 
   function handleGoatEaten(eatenClass) {
     $(eatenClass).find(".goat").remove();
+    // eatenScore++;
     setEatenScore(eatenScore + 1);
     if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
-      handleGameComplete("goat");
+      handleGameComplete("tiger");
     }
   }
 
@@ -313,7 +305,6 @@ export default function GameMultiplayer() {
         if (hasFilled.trim() === "") {
           let ifGoatExist = $(p.food).find(".goat");
           if (ifGoatExist.length) {
-            console.log("Feed Position Counted");
             availablePosition++;
           }
         }
@@ -324,43 +315,41 @@ export default function GameMultiplayer() {
 
   function positionClicked(e) {
     $(".just-moved").removeClass("just-moved");
-    // if (player.role === turn) {
-    if (e.target.nodeName === "IMG") {
-      let cls = $(e.target).attr("class");
-      if (cls.indexOf("tiger") >= 0) {
-        tigerClicked($(e.target).closest(".tiger"));
-      } else {
-        goatClicked($(e.target).closest(".goat"));
+    if (player.role === turn) {
+      if (e.target.nodeName === "IMG") {
+        let cls = $(e.target).attr("class");
+        if (cls.indexOf("tiger") >= 0) {
+          tigerClicked($(e.target).closest(".tiger"));
+        } else {
+          goatClicked($(e.target).closest(".goat"));
+        }
+        return;
       }
-      return;
-    }
-    let box = $(e.target).closest(".box").first();
-    let boxClass = $(box).attr("class");
-    let goatClass = $(e.target).attr("class");
-    let position = "";
-    boxClass = boxClass.split(" ");
-    goatClass = goatClass.split(" ");
-    position = "." + boxClass[1] + " ." + goatClass[1];
-    console.log("position", position);
-    if (turn === "goat") {
-      let success = placeGoat(position);
-      console.log("Place Goat Success", success);
-      if (success) {
-        sendMovement(position, "goat", globalSelectedGoat);
-        let availableTigerPosition = checkIfTigerCornered();
-        if (availableTigerPosition === 0) {
-          setTimeout(function () {
-            handleGameComplete("goat");
-          }, 1000);
+      let box = $(e.target).closest(".box").first();
+      let boxClass = $(box).attr("class");
+      let goatClass = $(e.target).attr("class");
+      let position = "";
+      boxClass = boxClass.split(" ");
+      goatClass = goatClass.split(" ");
+      position = "." + boxClass[1] + " ." + goatClass[1];
+      if (turn === "goat") {
+        let success = placeGoat(position);
+        if (success) {
+          sendMovement(position, "goat", globalSelectedGoat);
+          let availableTigerPosition = checkIfTigerCornered();
+          if (availableTigerPosition === 0) {
+            setTimeout(function () {
+              handleGameComplete("goat");
+            }, 1000);
+          }
+        }
+      } else {
+        let success = placeTiger(position);
+        if (success) {
+          sendMovement(position, "tiger", globalSelectedTiger);
         }
       }
-    } else {
-      let success = placeTiger(position);
-      if (success) {
-        sendMovement(position, "tiger", globalSelectedTiger);
-      }
     }
-    // }
   }
   function sendMovement(position, playedTurn, selected) {
     let data = {
@@ -395,7 +384,7 @@ export default function GameMultiplayer() {
             .addClass("selected");
         }
       }
-
+      $(".just-moved").removeClass("just-moved");
       if (data.movement.turn === "tiger") {
         placeTiger(data.movement.position);
       } else {
@@ -422,8 +411,25 @@ export default function GameMultiplayer() {
     }
   }
   function playWinnerVictory(winner) {
-    alert(winner.toUpperCase() + " Won!");
+    setWinner(winner);
   }
+  const Exit = async () => {
+    setLoading(true);
+    await ref
+      .doc(contextId)
+      .collection("match")
+      .doc(gameId)
+      .update({
+        hasFinished: true,
+        rematchRequest: '',
+        exited: true
+      })
+      .then(() => {
+        setLoading(false);
+        // should create new context here
+        history.push("/");
+      });
+  };
   let v_width = $("body").width();
   if (v_width < 912) {
     boardW = v_width - 50;
@@ -435,6 +441,13 @@ export default function GameMultiplayer() {
   }
   return (
     <div className="board-wrapper">
+      <div className="navigation">
+        <Link onClick={Exit}>Exit Match</Link>
+      </div>
+      {loading && <Loading />}
+      {winner && (
+        <WinnerPopup winner={winner} contextId={contextId} gameId={gameId} />
+      )}
       {!enableMatch ? <Loading /> : ""}
       <div className="score">
         {eatenScore ? `Goat Eaten: ${eatenScore}` : ""}
@@ -444,7 +457,11 @@ export default function GameMultiplayer() {
         style={{ height: boardH, width: boardW }}
       >
         <div className="box box1">
-          <div onClick={positionClicked} className="p p1"></div>
+          <div onClick={positionClicked} className="p p1">
+            <div data-num="1" class="tiger tiger1">
+              <img class="tiger-image" src={tiger} />
+            </div>
+          </div>
           <div onClick={positionClicked} className="p p2"></div>
           <div onClick={positionClicked} className="p p3"></div>
           <div onClick={positionClicked} className="p p4"></div>
@@ -463,7 +480,11 @@ export default function GameMultiplayer() {
         </div>
         <div className="box box4">
           <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
+          <div onClick={positionClicked} className="p p2">
+            <div data-num="2" class="tiger tiger2">
+              <img class="tiger-image" src={tiger} />
+            </div>
+          </div>
           <div onClick={positionClicked} className="p p3"></div>
           <div onClick={positionClicked} className="p p4"></div>
         </div>
@@ -519,7 +540,11 @@ export default function GameMultiplayer() {
           <div onClick={positionClicked} className="p p1"></div>
           <div onClick={positionClicked} className="p p2"></div>
           <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
+          <div onClick={positionClicked} className="p p4">
+            <div data-num="3" class="tiger tiger3">
+              <img class="tiger-image" src={tiger} />
+            </div>
+          </div>
         </div>
         <div className="box box14">
           <div onClick={positionClicked} className="p p1"></div>
@@ -536,27 +561,45 @@ export default function GameMultiplayer() {
         <div className="box box16">
           <div onClick={positionClicked} className="p p1"></div>
           <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
+          <div onClick={positionClicked} className="p p3">
+            <div data-num="4" class="tiger tiger4">
+              <img class="tiger-image" src={tiger} />
+            </div>
+          </div>
           <div onClick={positionClicked} className="p p4"></div>
         </div>
         {opponent && (
-          <div className={`playerOpponent playerInfo ${turn === opponent.role ? 'turn-player' : ''}`}>
+          <div
+            className={`playerOpponent playerInfo ${
+              turn === opponent.role ? "turn-player" : ""
+            }`}
+          >
             <div className="role">{opponent.role}</div>
             <div className="name-image">
               <div className="name">{opponent.name}</div>
               <div className="image">
-                <img src={`${opponent.photo}`} className={`${turn === opponent.role ? 'turn-player' : ''}`} />
+                <img
+                  src={`${opponent.photo}`}
+                  className={`${turn === opponent.role ? "turn-player" : ""}`}
+                />
               </div>
             </div>
           </div>
         )}
         {player && (
-          <div className={`playerPlayer playerInfo ${turn === player.role ? 'turn-player' : ''}`}>
+          <div
+            className={`playerPlayer playerInfo ${
+              turn === player.role ? "turn-player" : ""
+            }`}
+          >
             <div className="role">{player.role}</div>
             <div className="name-image">
               <div className="name">{player.name}</div>
               <div className="image">
-                <img src={`${player.photo}`} className={`${turn === player.role ? 'turn-player' : ''}`} />
+                <img
+                  src={`${player.photo}`}
+                  className={`${turn === player.role ? "turn-player" : ""}`}
+                />
               </div>
             </div>
           </div>
