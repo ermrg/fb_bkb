@@ -8,7 +8,7 @@ import Loading from "./Loading.js";
 import { useHistory } from "react-router";
 import WinnerPopup from "./WinnerPopup.js";
 import { Link } from "react-router-dom";
-
+let globalEatenScore = 0
 export default function GameMultiplayer() {
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
@@ -32,6 +32,7 @@ export default function GameMultiplayer() {
   let ref = firebase.firestore().collection("matches");
 
   useEffect(() => {
+    globalEatenScore = 0
     getMatches();
     const unsubscribe = ref
       .doc(contextId)
@@ -261,6 +262,8 @@ export default function GameMultiplayer() {
 
   function handleGoatEaten(eatenClass) {
     $(eatenClass).find(".goat").remove();
+    globalEatenScore ++
+    console.log('Goat Eaten', globalEatenScore)
     // eatenScore++;
     setEatenScore(eatenScore + 1);
     if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
@@ -436,7 +439,9 @@ export default function GameMultiplayer() {
     }
   }
   function playWinnerVictory(winner) {
-    setWinner(winner);
+    setTimeout(()=>{
+      setWinner(winner);
+    }, 4000)
   }
   const Exit = async () => {
     setLoading(true);
@@ -473,7 +478,7 @@ export default function GameMultiplayer() {
       )}
       {!enableMatch ? <Loading /> : ""}
       <div className="score">
-        {eatenScore ? `Goat Eaten: ${eatenScore}` : ""}
+        {globalEatenScore ? `Goat Eaten: ${globalEatenScore}` : ""}
       </div>
       <div
         className={`board ${turn}Turn`}
