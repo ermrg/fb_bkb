@@ -8,10 +8,7 @@ import Loading from "./Loading.js";
 import { useHistory } from "react-router";
 import WinnerPopup from "./WinnerPopup.js";
 import { Link } from "react-router-dom";
-// let globalSelectedGoat = "";
-let globalSelectedTiger = "";
-// let goatCount = 20;
-// let eatenScore = 0;
+
 export default function GameMultiplayer() {
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
@@ -27,7 +24,7 @@ export default function GameMultiplayer() {
   const history = useHistory();
   let boardW;
   let boardH;
-  let maxNoOfGoatEatenToFinishGame = 2;
+  let maxNoOfGoatEatenToFinishGame = 4;
   let LocalAvailablePositions = availablePositions.movePositon;
   let LocalFeedPositions = availablePositions.feedPosition;
   let gameId = history.location.state.gameId;
@@ -215,11 +212,11 @@ export default function GameMultiplayer() {
           $(positionClass).append(t);
           return true;
         } else {
-          console.log("Invalid Goat Move 1");
+          // console.log("Invalid Goat Move 1");
         }
       }
     } else {
-      console.log("Invalid Goat Move 2");
+      // console.log("Invalid Goat Move 2");
     }
   }
 
@@ -245,7 +242,7 @@ export default function GameMultiplayer() {
             isFeeding = true;
             return true;
           } else {
-            console.log("Invalid Move 1");
+            // console.log("Invalid Move 1");
             return false;
           }
         }
@@ -254,7 +251,7 @@ export default function GameMultiplayer() {
         handleGoatEaten(eatenGoat);
         return true;
       } else {
-        console.log("Invalid Move 2");
+        // console.log("Invalid Move 2");
         return false;
       }
     } else {
@@ -281,6 +278,29 @@ export default function GameMultiplayer() {
       $(".board").removeClass("goatTurn").addClass("tigerTurn");
       $(".goat").removeClass("selected");
     }
+  }
+
+  function checkifGoatCornered() {
+    let moveAvailable = 0;
+    let points = Object.keys(LocalAvailablePositions);
+    let emptyPoints = [];
+
+    points.map((p) => {
+      if ($(p).html().trim().length === 0) {
+        emptyPoints.push(p);
+      }
+    });
+    emptyPoints.map((ep) => {
+      let validPositions = LocalAvailablePositions[ep];
+
+      validPositions.map((vp) => {
+        if ($(vp).find(".goat").length) {
+          console.log($(vp))
+          moveAvailable++;
+        }
+      });
+    });
+    return moveAvailable;
   }
 
   function checkIfTigerCornered() {
@@ -338,15 +358,20 @@ export default function GameMultiplayer() {
           sendMovement(position, "goat", globalSelectedGoat);
           let availableTigerPosition = checkIfTigerCornered();
           if (availableTigerPosition === 0) {
-            setTimeout(function () {
-              handleGameComplete("goat");
-            }, 1000);
+            handleGameComplete("goat");
           }
         }
       } else {
         let success = placeTiger(position);
         if (success) {
           sendMovement(position, "tiger", globalSelectedTiger);
+          if (goatCount === 0) {
+            let availableGoatPosition = checkifGoatCornered();
+            console.log('availableGoatPosition', availableGoatPosition)
+            if (availableGoatPosition === 0) {
+              handleGameComplete("tiger");
+            }
+          }
         }
       }
     }
@@ -424,11 +449,9 @@ export default function GameMultiplayer() {
         rematchRequest: '',
         exited: true
       })
-      .then(() => {
-        setLoading(false);
-        // should create new context here
-        history.push("/");
-      });
+      window.FBInstant.quit()
+      setLoading(false);
+
   };
   let v_width = $("body").width();
   if (v_width < 912) {
@@ -442,7 +465,7 @@ export default function GameMultiplayer() {
   return (
     <div className="board-wrapper">
       <div className="navigation">
-        <Link onClick={Exit}>Exit Match</Link>
+        <a onClick={Exit}>Exit</a>
       </div>
       {loading && <Loading />}
       {winner && (
@@ -458,8 +481,8 @@ export default function GameMultiplayer() {
       >
         <div className="box box1">
           <div onClick={positionClicked} className="p p1">
-            <div data-num="1" class="tiger tiger1">
-              <img class="tiger-image" src={tiger} />
+            <div data-num="1" className="tiger tiger1">
+              <img className="tiger-image" src={tiger} />
             </div>
           </div>
           <div onClick={positionClicked} className="p p2"></div>
@@ -481,8 +504,8 @@ export default function GameMultiplayer() {
         <div className="box box4">
           <div onClick={positionClicked} className="p p1"></div>
           <div onClick={positionClicked} className="p p2">
-            <div data-num="2" class="tiger tiger2">
-              <img class="tiger-image" src={tiger} />
+            <div data-num="2" className="tiger tiger2">
+              <img className="tiger-image" src={tiger} />
             </div>
           </div>
           <div onClick={positionClicked} className="p p3"></div>
@@ -541,8 +564,8 @@ export default function GameMultiplayer() {
           <div onClick={positionClicked} className="p p2"></div>
           <div onClick={positionClicked} className="p p3"></div>
           <div onClick={positionClicked} className="p p4">
-            <div data-num="3" class="tiger tiger3">
-              <img class="tiger-image" src={tiger} />
+            <div data-num="3" className="tiger tiger3">
+              <img className="tiger-image" src={tiger} />
             </div>
           </div>
         </div>
@@ -562,8 +585,8 @@ export default function GameMultiplayer() {
           <div onClick={positionClicked} className="p p1"></div>
           <div onClick={positionClicked} className="p p2"></div>
           <div onClick={positionClicked} className="p p3">
-            <div data-num="4" class="tiger tiger4">
-              <img class="tiger-image" src={tiger} />
+            <div data-num="4" className="tiger tiger4">
+              <img className="tiger-image" src={tiger} />
             </div>
           </div>
           <div onClick={positionClicked} className="p p4"></div>

@@ -49,11 +49,9 @@ export default function WinnerPopup(props) {
         rematchRequest: '',
         exited: true
       })
-      .then(() => {
-        setLoading(false);
-        // should create new context here
-        history.push("/");
-      });
+      window.FBInstant.quit()
+      setLoading(false);
+
   };
 
   const Rematch = async () => {
@@ -124,6 +122,9 @@ export default function WinnerPopup(props) {
       .update({
         rematchRequest: { ...game.rematchRequest, status: action },
       });
+    if(action === 'declined'){
+      Exit()
+    }
     setLoading(false);
   };
   if (game && game.rematchGameId) {
@@ -165,38 +166,22 @@ export default function WinnerPopup(props) {
           {winner.toUpperCase()} Won!
           {rematchMsgSending && <div>Rematch request sending....</div>}
         </div>
-        {rematchAcceptRejctDialog ? (
-          <div className="winner-options">
-            <div
-              className="winner-option approve"
-              onClick={() => RematchAction("approved")}
-            >
-              Approve
-            </div>
-            <div
-              className="winner-option decline"
-              onClick={() => RematchAction("declined")}
-            >
-              Decline
-            </div>
+
+        <div className="winner-options">
+          <div className="winner-option" onClick={Exit}>
+            Exit
           </div>
-        ) : (
-          <div className="winner-options">
-            <div className="winner-option" onClick={Exit}>
-              Exit
+          {contextId && (
+            <div
+              className={`winner-option rematch ${
+                rematchMsgSending ? "disable" : ""
+              }`}
+              onClick={Rematch}
+            >
+              Re-Match
             </div>
-            {contextId && (
-              <div
-                className={`winner-option rematch ${
-                  rematchMsgSending ? "disable" : ""
-                }`}
-                onClick={Rematch}
-              >
-                Re-Match
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

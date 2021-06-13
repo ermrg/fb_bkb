@@ -21,7 +21,6 @@ export default function GameRoom(props) {
       .doc(gameId)
       .onSnapshot((doc) => {
         let updatedGame = doc.data();
-        console.log('Rematch : ',updatedGame)
         if (updatedGame.playerTwoId) {
           setPlayerJoined(true);
         }
@@ -54,7 +53,6 @@ export default function GameRoom(props) {
       });
     setLoading(false);
   };
-console.log(contextId, gameId, game)
   const StartMatch = async () => {
     setLoading(true);
     await ref
@@ -73,13 +71,28 @@ console.log(contextId, gameId, game)
       state: { contextId: contextId, gameId: gameId },
     });
   };
-  if (game && game.hasStarted == true) {
+  if (game && game.hasStarted == true && !game.hasFinished && !game.exited) {
     RedirectToGame();
   }
+  const Exit = async () => {
+    setLoading(true);
+    await ref
+      .doc(contextId)
+      .collection("match")
+      .doc(gameId)
+      .update({
+        hasFinished: true,
+        rematchRequest: '',
+        exited: true
+      })
+      window.FBInstant.quit()
+      setLoading(false);
+
+  };
   return (
     <div class="home-wrapper">
       <div className="navigation">
-        <Link to="/">Cancel</Link>
+        <a onClick={Exit}>Exit</a>
       </div>
       {loading && <Loading />}
       <div class="game-room">
