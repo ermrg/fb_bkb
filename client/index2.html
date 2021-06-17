@@ -156,8 +156,6 @@
       function showMessage(div, message) {
         document.getElementById(div).innerHTML = message;
       }
-
-      
     </script>
     <link rel="stylesheet" href="css/style.css" />
     <script src="js/availablePositions.js"></script>
@@ -514,6 +512,9 @@
           }
         } else {
           placeTiger(goatPosition);
+          if (goatCount === 0) {
+            console.log("Goat Positon", checkifGoatCornered());
+          }
         }
       });
 
@@ -544,13 +545,28 @@
       }
     </script>
     <script>
-      $(".invite").click(function () {
-          console.log('invite')
-        FBInstant.context.chooseAsync().then(function () {
-          console.log(FBInstant.context.getID());
-          // 1234567890
+      function checkifGoatCornered() {
+        let moveAvailable = 0;
+        let points = Object.keys(LocalAvailablePositions);
+        let emptyPoints = [];
+
+        points.map((p) => {
+          if ($(p).html().trim().length === 0) {
+            emptyPoints.push(p);
+          }
         });
-      });
+        emptyPoints.map((ep) => {
+          let validPositions = LocalAvailablePositions[ep];
+
+          validPositions.map((vp) => {
+            if ($(vp).find(".goat").length) {
+              console.log($(vp))
+              moveAvailable++;
+            }
+          });
+        });
+        return moveAvailable;
+      }
     </script>
   </body>
 </html>
