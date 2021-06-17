@@ -4,24 +4,37 @@ import goat from "../images/goat.png";
 import tiger from "../images/tiger.png";
 import $ from "jquery";
 import WinnerPopup from "./WinnerPopup.js";
+import switchTurnSound from "../music/switchturn.mp3";
+import tigerSound from "../music/tiger.mp3";
+import goatSound from "../music/goat.mp3";
+
 let boardW;
 let boardH;
-let turn = "goat";
-let goatCount = 20;
-let tigerCount = 4;
-let eatenScore = 0;
-let maxNoOfGoatEatenToFinishGame = 5;
+// let eatenScore = 0;
+let maxNoOfGoatEatenToFinishGame = 4;
 let LocalAvailablePositions = availablePositions.movePositon;
 let LocalFeedPositions = availablePositions.feedPosition;
-export default function Game() {
-  const [turn, setTurn] = useState('goat')
-  const [winner, setWinner] = useState('')
+export default function Game(props) {
+  const { date } = props;
+  const [turn, setTurn] = useState("goat");
+  const [eatenScore, setEatenScore] = useState(0);
+  const [goatCount, setGoatCount] = useState(0);
+  const [winner, setWinner] = useState("");
+  const [tigerAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(tigerSound)
+  );
+  const [goatAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(goatSound)
+  );
+  const [switchTurnAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(switchTurnSound)
+  );
   useEffect(() => {
-    placeTiger(".box1 .p1");
-    placeTiger(".box4 .p2");
-    placeTiger(".box13 .p4");
-    placeTiger(".box16 .p3");
-  }, []);
+    setGoatCount(20);
+    setEatenScore(0);
+    setTurn("goat");
+    setWinner("");
+  }, [date]);
   function goatClicked(e) {
     // e.stopPropagation();
     console.log("goat Clicker");
@@ -75,18 +88,6 @@ export default function Game() {
       } else {
         // console.log('Invalid Move 3')
       }
-    } else {
-      if (tigerCount > 0) {
-        let t =
-          `<div  data-num="${tigerCount}" class="tiger tiger` +
-          tigerCount +
-          `"><img class="tiger-image" src="` +
-          tiger +
-          `" /></div>`;
-        $(positionClass).append(t);
-        // switchTurn();
-        tigerCount--;
-      }
     }
   }
 
@@ -105,7 +106,8 @@ export default function Game() {
             `"/></div>`;
           $(positionClass).append(t);
           switchTurn();
-          goatCount--;
+          // goatCount--;
+          setGoatCount(goatCount - 1);
         }
       } else {
         let selectedGoatClass = $(selectedGoat).closest(".p").attr("class");
@@ -180,14 +182,20 @@ export default function Game() {
 
   function handleGoatEaten(eatenClass) {
     $(eatenClass).find(".goat").remove();
-    eatenScore++;
-    $(".score").html(eatenScore);
+    setEatenScore(eatenScore + 1);
+    tigerAudio.volume = 0.5;
+    tigerAudio.play();
+    setTimeout(() => {
+      goatAudio.play();
+    }, 1000);
+    // $(".score").html(eatenScore);
     if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
-      playWinnerVictory('tiger')
+      playWinnerVictory("tiger");
     }
   }
 
   function switchTurn() {
+    switchTurnAudio.play();
     if (turn === "tiger") {
       setTurn("goat");
       $(".board").removeClass("tigerTurn").addClass("goatTurn");
@@ -229,6 +237,28 @@ export default function Game() {
     });
     return availablePosition;
   }
+  function checkifGoatCornered() {
+    let moveAvailable = 0;
+    let points = Object.keys(LocalAvailablePositions);
+    let emptyPoints = [];
+
+    points.map((p) => {
+      if ($(p).html().trim().length === 0) {
+        emptyPoints.push(p);
+      }
+    });
+    emptyPoints.map((ep) => {
+      let validPositions = LocalAvailablePositions[ep];
+
+      validPositions.map((vp) => {
+        if ($(vp).find(".goat").length) {
+          console.log($(vp));
+          moveAvailable++;
+        }
+      });
+    });
+    return moveAvailable;
+  }
 
   function positionClicked(e) {
     $(".just-moved").removeClass("just-moved");
@@ -252,16 +282,23 @@ export default function Game() {
       placeGoat(goatPosition);
       let availableTigerPosition = checkIfTigerCornered();
       if (availableTigerPosition === 0) {
-        setTimeout(function () {
-          playWinnerVictory('goat')
-        }, 1000);
+        playWinnerVictory("goat");
       }
     } else {
       placeTiger(goatPosition);
+      if (goatCount === 0) {
+        let availableGoatPosition = checkifGoatCornered();
+        console.log("availableGoatPosition", availableGoatPosition);
+        if (availableGoatPosition === 0) {
+          playWinnerVictory("tiger");
+        }
+      }
     }
   }
   function playWinnerVictory(winner) {
-    setWinner(winner)
+    setTimeout(() => {
+      setWinner(winner);
+    }, 2000);
   }
   let v_width = $("body").width();
   if (v_width < 912) {
@@ -276,15 +313,25 @@ export default function Game() {
     <div>
       <div className="board-wrapper">
         <div className="score">
-          {eatenScore ? `Goat Eaten: ${eatenScore}` : ""}
+          <span style={{ color: "greenyellow" }}>
+            {goatCount ? `Goat: ${goatCount}` : ""}
+          </span>
+          <span>
+            <br />
+            {eatenScore ? `Eaten: ${eatenScore}` : ""}
+          </span>
         </div>
-        {winner && <WinnerPopup winner={winner}/>}
+        {winner && <WinnerPopup winner={winner} mode="single" />}
         <div
           className="board goatTurn"
           style={{ height: boardH, width: boardW }}
         >
           <div className="box box1">
-            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p1">
+              <div data-num="1" className="tiger tiger1">
+                <img className="tiger-image" src={tiger} />
+              </div>
+            </div>
             <div onClick={positionClicked} className="p p2"></div>
             <div onClick={positionClicked} className="p p3"></div>
             <div onClick={positionClicked} className="p p4"></div>
@@ -303,7 +350,11 @@ export default function Game() {
           </div>
           <div className="box box4">
             <div onClick={positionClicked} className="p p1"></div>
-            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p2">
+              <div data-num="2" className="tiger tiger2">
+                <img className="tiger-image" src={tiger} />
+              </div>
+            </div>
             <div onClick={positionClicked} className="p p3"></div>
             <div onClick={positionClicked} className="p p4"></div>
           </div>
@@ -359,7 +410,11 @@ export default function Game() {
             <div onClick={positionClicked} className="p p1"></div>
             <div onClick={positionClicked} className="p p2"></div>
             <div onClick={positionClicked} className="p p3"></div>
-            <div onClick={positionClicked} className="p p4"></div>
+            <div onClick={positionClicked} className="p p4">
+              <div data-num="3" className="tiger tiger3">
+                <img className="tiger-image" src={tiger} />
+              </div>
+            </div>
           </div>
           <div className="box box14">
             <div onClick={positionClicked} className="p p1"></div>
@@ -376,13 +431,25 @@ export default function Game() {
           <div className="box box16">
             <div onClick={positionClicked} className="p p1"></div>
             <div onClick={positionClicked} className="p p2"></div>
-            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p3">
+              <div data-num="4" className="tiger tiger4">
+                <img className="tiger-image" src={tiger} />
+              </div>
+            </div>
             <div onClick={positionClicked} className="p p4"></div>
           </div>
-          <div className={`playerOpponent playerInfo ${turn === 'tiger' ? 'turn-player' : ''}`}>
+          <div
+            className={`playerOpponent playerInfo ${
+              turn === "tiger" ? "turn-player" : ""
+            }`}
+          >
             <div className="role">Tiger</div>
           </div>
-          <div className={`playerPlayer playerInfo ${turn === 'goat' ? 'turn-player' : ''}`}>
+          <div
+            className={`playerPlayer playerInfo ${
+              turn === "goat" ? "turn-player" : ""
+            }`}
+          >
             <div className="role">Goat</div>
           </div>
         </div>

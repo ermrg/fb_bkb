@@ -3,10 +3,15 @@ import { Link, useHistory } from "react-router-dom";
 import firebase from "../Firebase";
 import tigerLogo from "../images/tiger_1024x1024.png";
 import Loading from "./Loading";
+import { FaUser, FaUserFriends } from "react-icons/fa";
+import audioFile from "../music/background.mp3";
 
 export default function Home(props) {
   const { redirectTo, gameId } = props;
-  const [ loading, setLoading ] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [audio] = useState(
+    typeof Audio !== "undefined" && new Audio(audioFile)
+  );
   const history = useHistory();
   if (redirectTo === "game-room") {
     history.push({
@@ -58,11 +63,17 @@ export default function Home(props) {
           .catch(function (err) {
             console.error("Update Async error", err);
           });
-      }).catch(function (err) {
+      })
+      .catch(function (err) {
         console.error("Can not get data", err);
       });
   };
   const InviteFirednd = () => {
+    if (audio.paused) {
+      audio.loop = true;
+      audio.volume = 0.3;
+      audio.play();
+    }
     window.FBInstant.context
       .chooseAsync({ minSize: 2, maxSize: 2 })
       .then(function () {
@@ -97,8 +108,18 @@ export default function Home(props) {
 
         <div className="menu">
           <div className="sub-menu menu">
-            <Link to="/practice">Single Player</Link>
-            <a onClick={InviteFirednd}>Invite Friend</a>
+            <Link to="/practice">
+              <span className="icon" style={{ fontSize: 30 }}>
+                <FaUser />
+              </span>
+              Player
+            </Link>
+            <a onClick={InviteFirednd}>
+              <span className="icon">
+                <FaUserFriends />
+              </span>
+              Invite
+            </a>
           </div>
         </div>
       </div>

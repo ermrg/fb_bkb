@@ -71,7 +71,6 @@ export default class App extends Component {
   }
 
   render() {
-    console.log(this.state)
     return (
       <Router>
         {this.state.loading && <Loading />}

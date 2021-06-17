@@ -2,15 +2,36 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import firebase from "../Firebase";
 import Loading from "./Loading";
+import tigerSound from "../music/tiger.mp3";
+import goatSound from "../music/goat.mp3";
 export default function WinnerPopup(props) {
-  const { winner, contextId, gameId } = props;
+  const { winner, contextId, gameId, mode } = props;
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
   const [rematchMsgSending, setRematchMsgSending] = useState(false);
+  const [tigerAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(tigerSound)
+  );
+  const [goatAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(goatSound)
+  );
   const [rematchAcceptRejctDialog, setRematchAcceptRejctDialog] =
     useState(false);
   const history = useHistory();
   let ref = firebase.firestore().collection("matches");
+  useEffect(() => {
+    if (winner === "tiger") {
+      tigerAudio.play();
+      setTimeout(() => {
+        tigerAudio.play();
+      }, 2000);
+    } else {
+      goatAudio.play();
+      setTimeout(() => {
+        goatAudio.play();
+      }, 2000);
+    }
+  }, []);
   useEffect(() => {
     const unsubscribe = ref
       .doc(contextId)
@@ -19,8 +40,12 @@ export default function WinnerPopup(props) {
       .onSnapshot((doc) => {
         let updatedGame = doc.data();
         setGame({ ...updatedGame });
-        if (updatedGame.rematchRequest && !updatedGame.rematchGameId) {
-          console.log("Game", updatedGame);
+        if (
+          updatedGame &&
+          updatedGame.rematchRequest &&
+          !updatedGame.rematchGameId &&
+          updatedGame.exited != true
+        ) {
           if (updatedGame.rematchRequest.status === "pending") {
             if (
               updatedGame.rematchRequest.receiverId ===
@@ -33,6 +58,8 @@ export default function WinnerPopup(props) {
           } else {
             Exit();
           }
+        } else {
+          Exit();
         }
       });
     return () => unsubscribe();
@@ -40,18 +67,21 @@ export default function WinnerPopup(props) {
 
   const Exit = async () => {
     setLoading(true);
-    await ref
-      .doc(contextId)
-      .collection("match")
-      .doc(gameId)
-      .update({
-        hasFinished: true,
-        rematchRequest: '',
-        exited: true
-      })
-      window.FBInstant.quit()
-      setLoading(false);
+    if (mode && mode === "single") {
+      // window.FBInstant.quit();
+    } else {
+      if (game.exited != true && game.hasFinished != true) {
+        await ref.doc(contextId).collection("match").doc(gameId).update({
+          hasFinished: true,
+          rematchRequest: "",
+          exited: true,
+        });
+      }
 
+      window.FBInstant.quit();
+    }
+
+    setLoading(false);
   };
 
   const Rematch = async () => {
@@ -122,8 +152,8 @@ export default function WinnerPopup(props) {
       .update({
         rematchRequest: { ...game.rematchRequest, status: action },
       });
-    if(action === 'declined'){
-      Exit()
+    if (action === "declined") {
+      Exit();
     }
     setLoading(false);
   };
@@ -132,6 +162,32 @@ export default function WinnerPopup(props) {
       pathname: "/game-room",
       state: { gameId: game.rematchGameId },
     });
+  }
+  if (mode && mode === "single") {
+    return (
+      <div className="winner-popup">
+        {loading && <Loading />}
+        <div className="message-wrapper">
+          <div className="message">{winner.toUpperCase()} Won!</div>
+
+          <div className="winner-options">
+            <div className="winner-option" onClick={Exit}>
+              Exit
+            </div>
+            <div
+              className={`winner-option rematch ${
+                rematchMsgSending ? "disable" : ""
+              }`}
+              onClick={() =>
+                history.push({ pathname: "/", redirectTo: "practice" })
+              }
+            >
+              Home
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
   if (rematchAcceptRejctDialog) {
     return (
@@ -158,6 +214,7 @@ export default function WinnerPopup(props) {
       </div>
     );
   }
+
   return (
     <div className="winner-popup">
       {loading && <Loading />}

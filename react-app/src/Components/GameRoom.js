@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaSignOutAlt, FaHome } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import firebase from "../Firebase";
 import Loading from "./Loading";
@@ -55,13 +56,9 @@ export default function GameRoom(props) {
   };
   const StartMatch = async () => {
     setLoading(true);
-    await ref
-      .doc(contextId)
-      .collection("match")
-      .doc(gameId)
-      .update({
-        hasStarted: true,
-      });
+    await ref.doc(contextId).collection("match").doc(gameId).update({
+      hasStarted: true,
+    });
     setLoading(false);
   };
 
@@ -76,23 +73,23 @@ export default function GameRoom(props) {
   }
   const Exit = async () => {
     setLoading(true);
-    await ref
-      .doc(contextId)
-      .collection("match")
-      .doc(gameId)
-      .update({
-        hasFinished: true,
-        rematchRequest: '',
-        exited: true
-      })
-      window.FBInstant.quit()
-      setLoading(false);
-
+    ref.doc(contextId).collection("match").doc(gameId).update({
+      hasFinished: true,
+      rematchRequest: "",
+      exited: true,
+    });
+    await window.FBInstant.quit();
+    // setLoading(false);
   };
   return (
     <div class="home-wrapper">
       <div className="navigation">
-        <a onClick={Exit}>Exit</a>
+        <Link to="/">
+          <FaHome fontSize={40} style={{ margin: 5 }} />{" "}
+        </Link>
+        <a onClick={Exit}>
+          <FaSignOutAlt />
+        </a>
       </div>
       {loading && <Loading />}
       <div class="game-room">

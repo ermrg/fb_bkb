@@ -8,7 +8,13 @@ import Loading from "./Loading.js";
 import { useHistory } from "react-router";
 import WinnerPopup from "./WinnerPopup.js";
 import { Link } from "react-router-dom";
-let globalEatenScore = 0
+import { FaHome, FaSignOutAlt } from "react-icons/fa";
+
+import switchTurnSound from "../music/switchturn.mp3";
+import tigerSound from "../music/tiger.mp3";
+import goatSound from "../music/goat.mp3";
+
+let globalEatenScore = 0;
 export default function GameMultiplayer() {
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
@@ -22,6 +28,15 @@ export default function GameMultiplayer() {
   const [globalSelectedGoat, setGlobalSelectedGoat] = useState("");
   const [globalSelectedTiger, setGlobalSelectedTiger] = useState("");
   const history = useHistory();
+  const [tigerAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(tigerSound)
+  );
+  const [goatAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(goatSound)
+  );
+  const [switchTurnAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(switchTurnSound)
+  );
   let boardW;
   let boardH;
   let maxNoOfGoatEatenToFinishGame = 4;
@@ -32,7 +47,9 @@ export default function GameMultiplayer() {
   let ref = firebase.firestore().collection("matches");
 
   useEffect(() => {
-    globalEatenScore = 0
+    globalEatenScore = 0;
+    setEatenScore(0);
+    setGoatCount(0);
     getMatches();
     const unsubscribe = ref
       .doc(contextId)
@@ -180,7 +197,7 @@ export default function GameMultiplayer() {
     if ($(ifAlreadyGoatExit).length + $(ifAlreadyTigerExit).length === 0) {
       if (selectedGoat.length === 0) {
         if (goatCount > 0) {
-          let goatClass = "goat goat" + goatCount.length;
+          let goatClass = "goat goat" + goatCount;
           let t =
             `<div class="${goatClass} just-moved"><img class="goat-image" src="` +
             goat +
@@ -262,16 +279,23 @@ export default function GameMultiplayer() {
 
   function handleGoatEaten(eatenClass) {
     $(eatenClass).find(".goat").remove();
-    globalEatenScore ++
-    console.log('Goat Eaten', globalEatenScore)
+    globalEatenScore++;
+    // setEatenScore(eatenScore+1)
+    // console.log("Goat Eaten", globalEatenScore);
     // eatenScore++;
     setEatenScore(eatenScore + 1);
+    tigerAudio.volume = 0.5;
+    tigerAudio.play();
+    setTimeout(() => {
+      goatAudio.play();
+    }, 1000);
     if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
       handleGameComplete("tiger");
     }
   }
 
   function switchTurn(newTurn) {
+    switchTurnAudio.play();
     if (newTurn === "goat") {
       setTurn("goat");
       $(".board").removeClass("tigerTurn").addClass("goatTurn");
@@ -298,7 +322,7 @@ export default function GameMultiplayer() {
 
       validPositions.map((vp) => {
         if ($(vp).find(".goat").length) {
-          console.log($(vp))
+          console.log($(vp));
           moveAvailable++;
         }
       });
@@ -370,9 +394,9 @@ export default function GameMultiplayer() {
           sendMovement(position, "tiger", globalSelectedTiger);
           if (goatCount === 0) {
             let availableGoatPosition = checkifGoatCornered();
-            console.log('availableGoatPosition', availableGoatPosition)
+            console.log("availableGoatPosition", availableGoatPosition);
             if (availableGoatPosition === 0) {
-              handleGameComplete("tiger");
+              handleGameComplete("tiger", true);
             }
           }
         }
@@ -425,38 +449,33 @@ export default function GameMultiplayer() {
     }
     setGame({ ...data });
   }
-  function handleGameComplete(winner) {
-    if (winner === player.role) {
+  function handleGameComplete(winner, forceSend = false) {
+    if (winner === player.role || forceSend) {
       ref
         .doc(contextId)
         .collection("match")
         .doc(gameId)
         .set({
           ...game,
-          winner: player.id,
-          winnerRole: player.role,
+          winner: forceSend ? opponent.id : player.id,
+          winnerRole: forceSend ? opponent.role : player.role,
         });
     }
   }
   function playWinnerVictory(winner) {
-    setTimeout(()=>{
+    setTimeout(() => {
       setWinner(winner);
-    }, 4000)
+    }, 4000);
   }
   const Exit = async () => {
     setLoading(true);
-    await ref
-      .doc(contextId)
-      .collection("match")
-      .doc(gameId)
-      .update({
-        hasFinished: true,
-        rematchRequest: '',
-        exited: true
-      })
-      window.FBInstant.quit()
-      setLoading(false);
-
+    ref.doc(contextId).collection("match").doc(gameId).update({
+      hasFinished: true,
+      rematchRequest: "",
+      exited: true,
+    });
+    await window.FBInstant.quit();
+    // setLoading(false);
   };
   let v_width = $("body").width();
   if (v_width < 912) {
@@ -470,7 +489,12 @@ export default function GameMultiplayer() {
   return (
     <div className="board-wrapper">
       <div className="navigation">
-        <a onClick={Exit}>Exit</a>
+        <Link to="/">
+          <FaHome fontSize={40} style={{ margin: 5 }} />{" "}
+        </Link>
+        <a onClick={Exit}>
+          <FaSignOutAlt />
+        </a>
       </div>
       {loading && <Loading />}
       {winner && (
@@ -478,7 +502,13 @@ export default function GameMultiplayer() {
       )}
       {!enableMatch ? <Loading /> : ""}
       <div className="score">
-        {globalEatenScore ? `Goat Eaten: ${globalEatenScore}` : ""}
+        <span style={{ color: "greenyellow" }}>
+          {goatCount ? `Goat: ${goatCount}` : ""}
+        </span>
+        <span>
+          <br />
+          {eatenScore ? `Eaten: ${eatenScore}` : ""}
+        </span>
       </div>
       <div
         className={`board ${turn}Turn`}
@@ -597,11 +627,7 @@ export default function GameMultiplayer() {
           <div onClick={positionClicked} className="p p4"></div>
         </div>
         {opponent && (
-          <div
-            className={`playerOpponent playerInfo ${
-              turn === opponent.role ? "turn-player" : ""
-            }`}
-          >
+          <div className={`playerOpponent playerInfo`}>
             <div className="role">{opponent.role}</div>
             <div className="name-image">
               <div className="name">{opponent.name}</div>
@@ -615,11 +641,7 @@ export default function GameMultiplayer() {
           </div>
         )}
         {player && (
-          <div
-            className={`playerPlayer playerInfo ${
-              turn === player.role ? "turn-player" : ""
-            }`}
-          >
+          <div className={`playerPlayer playerInfo`}>
             <div className="role">{player.role}</div>
             <div className="name-image">
               <div className="name">{player.name}</div>

@@ -1,11 +1,13 @@
 @font-face {
-  font-family: "Luckiest Guy", cursive;
+  font-family: "Luckiest Guy";
   src: URL("font.ttf") format("truetype");
 }
 body {
   background-image: linear-gradient(to bottom right, #3f51b5, #e91e63);
   height: 100vh;
   overflow: hidden;
+  font-family: 'Luckiest Guy';
+  letter-spacing: 5px;
 }
 #root {
   height: 100%;
@@ -68,9 +70,9 @@ body {
 
 .menu a,
 .sub-menu a {
-  padding: 40px 20px;
+  padding: 20px 30px;
   background-color: #fdffd5;
-  text-shadow: 1px 1px 2px;
+  text-shadow: 0px 0px 3px;
   text-transform: uppercase;
   box-shadow: 2px 2px 9px 4px #795548;
   text-decoration: none;
@@ -79,6 +81,15 @@ body {
   cursor: pointer;
   font-size: 22px;
   letter-spacing: 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+a span.icon {
+  font-size: 40px;
+  display: flex;
+  color: #6446a4;
 }
 
 .menu a:hover {
@@ -507,14 +518,14 @@ body {
   }
 }
 .just-moved {
-  animation-name: spin;
-  animation-duration: 8000ms;
+  animation-name: grow;
+  animation-duration: 1000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
 .turn-player {
-  animation-name: grow;
-  animation-duration: 2000ms;
+  animation-name: spin;
+  animation-duration: 5000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
@@ -604,8 +615,8 @@ body {
 }
 .winner-options .winner-option {
   border: 1px solid #bbb;
-  border-radius: 15px;
-  padding: 5px 20px;
+  border-radius: 5px;
+  padding: 20px 10px 15px 15px;
   cursor: pointer;
   margin-left: 5px;
 }
