@@ -14,7 +14,7 @@ import switchTurnSound from "../music/switchturn.mp3";
 import tigerSound from "../music/tiger.mp3";
 import goatSound from "../music/goat.mp3";
 
-let globalEatenScore = 0;
+// let globalEatenScore = 0;
 export default function GameMultiplayer() {
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
@@ -47,9 +47,9 @@ export default function GameMultiplayer() {
   let ref = firebase.firestore().collection("matches");
 
   useEffect(() => {
-    globalEatenScore = 0;
+    // globalEatenScore = 0;
     setEatenScore(0);
-    setGoatCount(0);
+    setGoatCount(20);
     getMatches();
     const unsubscribe = ref
       .doc(contextId)
@@ -279,7 +279,7 @@ export default function GameMultiplayer() {
 
   function handleGoatEaten(eatenClass) {
     $(eatenClass).find(".goat").remove();
-    globalEatenScore++;
+    // globalEatenScore++;
     // setEatenScore(eatenScore+1)
     // console.log("Goat Eaten", globalEatenScore);
     // eatenScore++;
@@ -490,10 +490,10 @@ export default function GameMultiplayer() {
     <div className="board-wrapper">
       <div className="navigation">
         <Link to="/">
-          <FaHome fontSize={40} style={{ margin: 5 }} />{" "}
+          <FaHome fontSize={35} style={{ margin: 5 }} />
         </Link>
         <a onClick={Exit}>
-          <FaSignOutAlt />
+          <FaSignOutAlt fontSize={35} style={{margin: 5}}/>
         </a>
       </div>
       {loading && <Loading />}

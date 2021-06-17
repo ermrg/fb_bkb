@@ -85,10 +85,10 @@ export default function GameRoom(props) {
     <div class="home-wrapper">
       <div className="navigation">
         <Link to="/">
-          <FaHome fontSize={40} style={{ margin: 5 }} />{" "}
+          <FaHome fontSize={35} style={{ margin: 5 }} />{" "}
         </Link>
         <a onClick={Exit}>
-          <FaSignOutAlt />
+          <FaSignOutAlt fontSize={35} style={{margin: 5}} />
         </a>
       </div>
       {loading && <Loading />}

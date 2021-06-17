@@ -218,7 +218,7 @@ a span.icon {
   border: 1px solid #ff5722;
   margin: auto;
   width: fit-content;
-  padding: 5px 20px;
+  padding: 15px;
   border-radius: 15px;
   background: #ff5722;
   color: #fff;
@@ -535,13 +535,13 @@ a span.icon {
 }
 .playerPlayer {
   bottom: -63px;
-  left: -10px;
+  left: 0px;
   display: flex;
   flex-direction: column-reverse;
 }
 .playerOpponent {
   top: -63px;
-  right: -8px;
+  right: 0px;
   display: flex;
   flex-direction: column;
   text-align: right;
@@ -549,6 +549,7 @@ a span.icon {
 .role {
   font-size: 16px;
   text-transform: uppercase;
+  margin-top: 5px;
 }
 .name-image {
   display: flex;
