@@ -6,7 +6,7 @@ body {
   background-image: linear-gradient(to bottom right, #3f51b5, #e91e63);
   height: 100vh;
   overflow: hidden;
-  font-family: 'Luckiest Guy';
+  font-family: "Luckiest Guy";
   letter-spacing: 5px;
 }
 #root {
@@ -517,6 +517,42 @@ a span.icon {
     transform: scale(1);
   }
 }
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+    display: none;
+  }
+}
 .just-moved {
   animation-name: grow;
   animation-duration: 1000ms;
@@ -578,10 +614,21 @@ a span.icon {
   top: 10px;
   font-weight: bold;
   color: #fff;
+  display: flex;
+  z-index: 555;
 }
 .navigation a {
   color: #fff;
   text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.navigation a.rematch {
+  border: 1px solid;
+  padding: 5px 10px;
+  border-radius: 15px;
 }
 .winner-popup {
   position: absolute;
@@ -593,7 +640,7 @@ a span.icon {
   z-index: 555;
   background: #000000cc;
 }
-.winner-popup .message-wrapper {
+.winner-popup {
   background-color: #fff;
   padding: 50px;
   display: flex;
@@ -602,6 +649,8 @@ a span.icon {
   flex-direction: column;
   border-radius: 20px;
   margin: 25px;
+}
+.message-wrapper {
 }
 .message-wrapper .message {
   font-size: 22px;
@@ -621,13 +670,69 @@ a span.icon {
   cursor: pointer;
   margin-left: 5px;
 }
-.winner-option.rematch {
+.winner-option.rematch,
+.winner-option.approve {
   background-color: darkslategray;
   color: #fff;
   border-color: darkslategray;
 }
 .winner-option.rematch.disable {
   cursor: not-allowed;
+}
+.message-wrapper {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+.displayMessageContainer {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+  z-index: 55;
+  padding-top: 2px;
+}
+.receivedMessage {
+  color: #c7edff;
+  font-size: 45px;
+  animation-name: shake;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  min-height: 45px;
+}
+.message-component {
+  display: flex;
+  color: #c7edff;
+  position: relative;
+  font-size: 30px;
+}
+.message-component .icon{
+  font-size: 45px;
+  color: #3f51b5;
+}
+.message-component .messages {
+  /* position: absolute; */
+  overflow: hidden;
+  display: flex;
+    align-items: center;
+    color: #f4bc1f;
+}
+.message-component .messages.hide {
+  opacity: 0;
+  transition: all 0.5s;
+}
+.message-component .messages.show {
+  opacity: 1;
+  transition: all 0.5s;
+}
+.message-component .messages.disabled {
+  opacity: 0.5;
+  transition: all 0.5s;
+  cursor: progress;
+}
+.message-component .messages span {
+  margin: 5px;
 }
 @media only screen and (max-width: 768px) {
   .tiger img {
@@ -644,6 +749,9 @@ a span.icon {
 
   .goat.selected img {
     height: 45px;
+  }
+  .displayMessageContainer {
+    padding-top: 50px;
   }
 }
 

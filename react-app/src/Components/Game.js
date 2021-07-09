@@ -20,6 +20,29 @@ export default function Game(props) {
   const [eatenScore, setEatenScore] = useState(0);
   const [goatCount, setGoatCount] = useState(0);
   const [winner, setWinner] = useState("");
+  // const game = {
+  //   hasJoined: true,
+  //   hasStarted: true,
+  //   movement: {
+  //     playerId: "3872493182848314",
+  //     position: ".box4 .p1",
+  //     selected: ".box4 .p2",
+  //     turn: "tiger",
+  //   },
+  //   movementChanged: true,
+  //   playerOneId: "3872493182848314",
+  //   playerOneName: "Arun",
+  //   playerOnePhoto:
+  //     "https://platform-lookaside.fbsbx.com/platform/instantgames/profile_pic.jpg?igpid=3872493182848314&height=256&width=256&ext=1626596845&hash=AeRA5Mg2F1dmCvfI-M4",
+  //   playerOneRole: "tiger",
+  //   playerTwoId: "5599785686729941",
+  //   playerTwoName: "हरि प्रिया",
+  //   playerTwoPhoto:
+  //     "https://platform-lookaside.fbsbx.com/platform/instantgames/profile_pic.jpg?igpid=5599785686729941&height=256&width=256&ext=1626596863&hash=AeRLLGP52UiR7I5aPaQ",
+  //   playerTwoRole: "goat",
+  //   turn: "goat",
+  //   winner: "",
+  // };
   const [tigerAudio] = useState(
     typeof Audio !== "undefined" && new Audio(tigerSound)
   );

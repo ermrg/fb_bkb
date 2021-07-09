@@ -58,8 +58,6 @@ export default function WinnerPopup(props) {
           } else {
             Exit();
           }
-        } else {
-          Exit();
         }
       });
     return () => unsubscribe();
@@ -67,11 +65,12 @@ export default function WinnerPopup(props) {
 
   const Exit = async () => {
     setLoading(true);
+    console.log('Set loading from exit')
     if (mode && mode === "single") {
       // window.FBInstant.quit();
     } else {
       if (game.exited != true && game.hasFinished != true) {
-        await ref.doc(contextId).collection("match").doc(gameId).update({
+        ref.doc(contextId).collection("match").doc(gameId).update({
           hasFinished: true,
           rematchRequest: "",
           exited: true,
@@ -80,6 +79,7 @@ export default function WinnerPopup(props) {
 
       window.FBInstant.quit();
     }
+    // window.FBInstant.quit();
 
     setLoading(false);
   };
@@ -87,6 +87,8 @@ export default function WinnerPopup(props) {
   const Rematch = async () => {
     if (!rematchMsgSending) {
       setLoading(true);
+    console.log('Set loading from rematch')
+
       let msg = {
         type: "rematch",
         content: window.FBInstant.player.getName() + " Wants Rematch",
@@ -118,6 +120,7 @@ export default function WinnerPopup(props) {
 
   const CreateNewGame = async (game) => {
     setLoading(true);
+    console.log('Set loading from create game')
     if (window.FBInstant.player.getID() === game.rematchRequest.receiverId) {
       let res = await ref.doc(contextId).collection("match").add({
         playerOneId: game.playerOneId,
@@ -145,6 +148,8 @@ export default function WinnerPopup(props) {
   };
   const RematchAction = async (action) => {
     setLoading(true);
+    console.log('Set loading from rematch action')
+
     await ref
       .doc(contextId)
       .collection("match")

@@ -9,12 +9,15 @@ import { useHistory } from "react-router";
 import WinnerPopup from "./WinnerPopup.js";
 import { Link } from "react-router-dom";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import MessageComponent from "./MessageComponent.js";
+import ShowMessageComponent from "./ShowMessageComponent.js";
 
 import switchTurnSound from "../music/switchturn.mp3";
 import tigerSound from "../music/tiger.mp3";
 import goatSound from "../music/goat.mp3";
 
-// let globalEatenScore = 0;
+let globalEatenScore = 0;
+let globalGoatCount = 20;
 export default function GameMultiplayer() {
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState();
@@ -27,6 +30,7 @@ export default function GameMultiplayer() {
   const [goatCount, setGoatCount] = useState(20);
   const [globalSelectedGoat, setGlobalSelectedGoat] = useState("");
   const [globalSelectedTiger, setGlobalSelectedTiger] = useState("");
+  const [displayMessage, setDisplayMessage] = useState("");
   const history = useHistory();
   const [tigerAudio] = useState(
     typeof Audio !== "undefined" && new Audio(tigerSound)
@@ -47,9 +51,10 @@ export default function GameMultiplayer() {
   let ref = firebase.firestore().collection("matches");
 
   useEffect(() => {
-    // globalEatenScore = 0;
-    setEatenScore(0);
-    setGoatCount(20);
+    globalEatenScore = 0;
+    globalGoatCount = 20;
+    // setEatenScore(0);
+    // setGoatCount(20);
     getMatches();
     const unsubscribe = ref
       .doc(contextId)
@@ -65,7 +70,6 @@ export default function GameMultiplayer() {
       });
     return () => unsubscribe();
   }, []);
-
   const getMatches = async () => {
     const doc = await ref.doc(contextId).collection("match").doc(gameId).get();
     if (doc.exists) {
@@ -110,7 +114,7 @@ export default function GameMultiplayer() {
   };
   function goatClicked(e) {
     // e.stopPropagation();
-    if (goatCount === 0 && turn === "goat") {
+    if (globalGoatCount === 0 && turn === "goat") {
       $(".goat").removeClass("selected");
       $(e).addClass("selected");
       let selectedTiger = $(document).find(".goat.selected");
@@ -196,15 +200,20 @@ export default function GameMultiplayer() {
     let ifAlreadyTigerExit = $(positionClass).find(".tiger");
     if ($(ifAlreadyGoatExit).length + $(ifAlreadyTigerExit).length === 0) {
       if (selectedGoat.length === 0) {
-        if (goatCount > 0) {
-          let goatClass = "goat goat" + goatCount;
+        if (globalGoatCount > 0) {
+          let goatClass = "goat goat" + globalGoatCount;
           let t =
             `<div class="${goatClass} just-moved"><img class="goat-image" src="` +
             goat +
             `"/></div>`;
-          $(positionClass).append(t);
-          // goatCount--;
+          globalGoatCount--;
+
+          console.log("Goat count", globalGoatCount);
+          // let newGoatCount = globalGoatCount - 1;
+          // console.log('New Goat Count')
           setGoatCount(goatCount - 1);
+
+          $(positionClass).append(t);
           return true;
         }
       } else {
@@ -279,17 +288,14 @@ export default function GameMultiplayer() {
 
   function handleGoatEaten(eatenClass) {
     $(eatenClass).find(".goat").remove();
-    // globalEatenScore++;
-    // setEatenScore(eatenScore+1)
-    // console.log("Goat Eaten", globalEatenScore);
-    // eatenScore++;
+    globalEatenScore++;
     setEatenScore(eatenScore + 1);
     tigerAudio.volume = 0.5;
     tigerAudio.play();
     setTimeout(() => {
       goatAudio.play();
     }, 1000);
-    if (eatenScore >= maxNoOfGoatEatenToFinishGame) {
+    if (globalEatenScore > maxNoOfGoatEatenToFinishGame) {
       handleGameComplete("tiger");
     }
   }
@@ -392,9 +398,8 @@ export default function GameMultiplayer() {
         let success = placeTiger(position);
         if (success) {
           sendMovement(position, "tiger", globalSelectedTiger);
-          if (goatCount === 0) {
+          if (globalGoatCount === 0) {
             let availableGoatPosition = checkifGoatCornered();
-            console.log("availableGoatPosition", availableGoatPosition);
             if (availableGoatPosition === 0) {
               handleGameComplete("tiger", true);
             }
@@ -447,8 +452,43 @@ export default function GameMultiplayer() {
     if (data.winner) {
       playWinnerVictory(data.winnerRole);
     }
+    checkMessages(data.messages);
     setGame({ ...data });
   }
+  function checkMessages(messages = []) {
+    let unreadMessages = [];
+    messages.map((m) => {
+      if (
+        m.status == "pending" &&
+        m.receiverId == window.FBInstant.player.getID()
+      ) {
+        unreadMessages.push(m.message);
+        return (m.status = "displayed");
+      }
+    });
+    if (unreadMessages.length) {
+      setDisplayMessage(unreadMessages[0]);
+      unreadMessages.splice(0, 1);
+      unreadMessages.map((um) => {
+        setTimeout(() => {
+          setDisplayMessage(um);
+        }, 2000);
+      });
+    }
+    setTimeout(() => {
+      ref
+        .doc(contextId)
+        .collection("match")
+        .doc(gameId)
+        .update({
+          messages: messages,
+        })
+        .catch((err) => {
+          console.log("Game Multiplayer Error: ", err);
+        });
+    }, 2000);
+  }
+
   function handleGameComplete(winner, forceSend = false) {
     if (winner === player.role || forceSend) {
       ref
@@ -459,6 +499,7 @@ export default function GameMultiplayer() {
           ...game,
           winner: forceSend ? opponent.id : player.id,
           winnerRole: forceSend ? opponent.role : player.role,
+          hasFinished: true,
         });
     }
   }
@@ -467,6 +508,9 @@ export default function GameMultiplayer() {
       setWinner(winner);
     }, 4000);
   }
+  function Rematch() {
+    handleGameComplete(player.role, true);
+  }
   const Exit = async () => {
     setLoading(true);
     ref.doc(contextId).collection("match").doc(gameId).update({
@@ -474,8 +518,8 @@ export default function GameMultiplayer() {
       rematchRequest: "",
       exited: true,
     });
-    await window.FBInstant.quit();
-    // setLoading(false);
+    window.FBInstant.quit();
+    setLoading(false);
   };
   let v_width = $("body").width();
   if (v_width < 912) {
@@ -487,173 +531,185 @@ export default function GameMultiplayer() {
     boardH = boardW - boardW * 0.1;
   }
   return (
-    <div className="board-wrapper">
-      <div className="navigation">
-        <Link to="/">
-          <FaHome fontSize={35} style={{ margin: 5 }} />
-        </Link>
-        <a onClick={Exit}>
-          <FaSignOutAlt fontSize={35} style={{margin: 5}}/>
-        </a>
+    <div>
+      <div className="displayMessageContainer">
+        <ShowMessageComponent msg={displayMessage} />
       </div>
-      {loading && <Loading />}
-      {winner && (
-        <WinnerPopup winner={winner} contextId={contextId} gameId={gameId} />
-      )}
-      {!enableMatch ? <Loading /> : ""}
-      <div className="score">
-        <span style={{ color: "greenyellow" }}>
-          {goatCount ? `Goat: ${goatCount}` : ""}
-        </span>
-        <span>
-          <br />
-          {eatenScore ? `Eaten: ${eatenScore}` : ""}
-        </span>
-      </div>
-      <div
-        className={`board ${turn}Turn`}
-        style={{ height: boardH, width: boardW }}
-      >
-        <div className="box box1">
-          <div onClick={positionClicked} className="p p1">
-            <div data-num="1" className="tiger tiger1">
-              <img className="tiger-image" src={tiger} />
+      <div className="board-wrapper">
+        <div className="navigation">
+          <a onClick={Rematch} className="rematch">
+            <span>Rematch</span>
+          </a>
+          <Link to="/">
+            <FaHome fontSize={35} style={{ margin: 5 }} />
+          </Link>
+
+          <a onClick={Exit}>
+            <FaSignOutAlt fontSize={35} style={{ margin: 5 }} />
+          </a>
+        </div>
+        {loading && <Loading />}
+        {winner && (
+          <WinnerPopup winner={winner} contextId={contextId} gameId={gameId} />
+        )}
+        {!enableMatch ? <Loading /> : ""}
+        <div className="score">
+          <span style={{ color: "greenyellow" }}>
+            {globalGoatCount ? `Goat: ${globalGoatCount}` : ""}
+          </span>
+          <span>
+            <br />
+            {globalEatenScore ? `Eaten: ${globalEatenScore}` : ""}
+          </span>
+        </div>
+        <div
+          className={`board ${turn}Turn`}
+          style={{ height: boardH, width: boardW }}
+        >
+          <div className="box box1">
+            <div onClick={positionClicked} className="p p1">
+              <div data-num="1" className="tiger tiger1">
+                <img className="tiger-image" src={tiger} />
+              </div>
             </div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
           </div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box2">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box3">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box4">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2">
-            <div data-num="2" className="tiger tiger2">
-              <img className="tiger-image" src={tiger} />
+          <div className="box box2">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box3">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box4">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2">
+              <div data-num="2" className="tiger tiger2">
+                <img className="tiger-image" src={tiger} />
+              </div>
             </div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
           </div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box5">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box6">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box7">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box8">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box9">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box10">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box11">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box12">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box13">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4">
-            <div data-num="3" className="tiger tiger3">
-              <img className="tiger-image" src={tiger} />
-            </div>
+          <div className="box box5">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
           </div>
-        </div>
-        <div className="box box14">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box15">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3"></div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        <div className="box box16">
-          <div onClick={positionClicked} className="p p1"></div>
-          <div onClick={positionClicked} className="p p2"></div>
-          <div onClick={positionClicked} className="p p3">
-            <div data-num="4" className="tiger tiger4">
-              <img className="tiger-image" src={tiger} />
-            </div>
+          <div className="box box6">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
           </div>
-          <div onClick={positionClicked} className="p p4"></div>
-        </div>
-        {opponent && (
-          <div className={`playerOpponent playerInfo`}>
-            <div className="role">{opponent.role}</div>
-            <div className="name-image">
-              <div className="name">{opponent.name}</div>
-              <div className="image">
-                <img
-                  src={`${opponent.photo}`}
-                  className={`${turn === opponent.role ? "turn-player" : ""}`}
-                />
+          <div className="box box7">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box8">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box9">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box10">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box11">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box12">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box13">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4">
+              <div data-num="3" className="tiger tiger3">
+                <img className="tiger-image" src={tiger} />
               </div>
             </div>
           </div>
-        )}
-        {player && (
-          <div className={`playerPlayer playerInfo`}>
-            <div className="role">{player.role}</div>
-            <div className="name-image">
-              <div className="name">{player.name}</div>
-              <div className="image">
-                <img
-                  src={`${player.photo}`}
-                  className={`${turn === player.role ? "turn-player" : ""}`}
-                />
+          <div className="box box14">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box15">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3"></div>
+            <div onClick={positionClicked} className="p p4"></div>
+          </div>
+          <div className="box box16">
+            <div onClick={positionClicked} className="p p1"></div>
+            <div onClick={positionClicked} className="p p2"></div>
+            <div onClick={positionClicked} className="p p3">
+              <div data-num="4" className="tiger tiger4">
+                <img className="tiger-image" src={tiger} />
               </div>
             </div>
+            <div onClick={positionClicked} className="p p4"></div>
           </div>
-        )}
+          {opponent && (
+            <div className={`playerOpponent playerInfo`}>
+              <div className="role">{opponent.role}</div>
+              <div className="name-image">
+                <div className="name">{opponent.name}</div>
+                <div className="image">
+                  <img
+                    src={`${opponent.photo}`}
+                    className={`${turn === opponent.role ? "turn-player" : ""}`}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          {player && (
+            <div className={`playerPlayer playerInfo`}>
+              <div className="role">{player.role}</div>
+              <div className="name-image">
+                <div className="name">{player.name}</div>
+                <div className="image">
+                  <img
+                    src={`${player.photo}`}
+                    className={`${turn === player.role ? "turn-player" : ""}`}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="message-wrapper">
+          <MessageComponent contextId={contextId} gameId={gameId} game={game} />
+        </div>
       </div>
     </div>
   );
