@@ -200,6 +200,7 @@ export default function GameRoom(props) {
                   contextId={contextId}
                   gameId={gameId}
                   game={game}
+                  showSwitch={true}
                 />
               </div>
             </div>

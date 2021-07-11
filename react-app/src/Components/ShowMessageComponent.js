@@ -6,8 +6,16 @@ import {
   FaSadCry,
   FaRandom,
 } from "react-icons/fa";
+import angryAudioFile from "../music/angry.mp3";
+import laughAudioFile from "../music/laugh.mp3";
 
 export default function ShowMessageComponent(props) {
+  const [angryAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(angryAudioFile)
+  );
+  const [laughAudio] = useState(
+    typeof Audio !== "undefined" && new Audio(laughAudioFile)
+  );
   const { msg } = props;
   const [message, setMessage] = useState("");
   useEffect(() => {
@@ -21,12 +29,16 @@ export default function ShowMessageComponent(props) {
     let icon = "";
     if (value) {
       switch (value) {
-        case "angry":
+        case "angry": {
           icon = <FaAngry />;
+          angryAudio.play();
           break;
-        case "laugh":
+        }
+        case "laugh": {
           icon = <FaLaugh />;
+          laughAudio.play();
           break;
+        }
         case "wow":
           icon = <FaSurprise />;
           break;

@@ -10,7 +10,7 @@ import {
 import firebase from "../Firebase";
 
 export default function MessageComponent(props) {
-  const { contextId, gameId, game } = props;
+  const { contextId, gameId, game, showSwitch } = props;
 
   const [showMessages, setShowMessages] = useState(false);
   const [disableMessages, setDisableMessages] = useState(false);
@@ -26,11 +26,10 @@ export default function MessageComponent(props) {
   //   },
   // };
   const toggelMessages = () => {
-
     setShowMessages(!showMessages);
   };
   const sendMessage = (message) => {
-    setDisableMessages(true)
+    setDisableMessages(true);
     let msg = {
       message: message,
       status: "pending",
@@ -52,8 +51,9 @@ export default function MessageComponent(props) {
       .doc(gameId)
       .update({
         messages: [...oldMessages, msg],
-      }).then(()=>{
-        setDisableMessages(false)
+      })
+      .then(() => {
+        setDisableMessages(false);
       })
       .catch((err) => {
         console.log(err);
@@ -61,18 +61,19 @@ export default function MessageComponent(props) {
   };
   return (
     <div className="message-component">
-      <div className={`messages ${showMessages ? "show" : "hide"} ${disableMessages ? "disabled" : ""}`}>
-        <span>
-          <FaRandom onClick={() => sendMessage("switch")} />
-        </span>
+      <div
+        className={`messages ${showMessages ? "show" : "hide"} ${
+          disableMessages ? "disabled" : ""
+        }`}
+      >
+        {showSwitch && (
+          <span>
+            <FaRandom onClick={() => sendMessage("switch")} />
+          </span>
+        )}
+
         <span>
           <FaAngry onClick={() => sendMessage("angry")} />
-        </span>
-        <span>
-          <FaSadCry onClick={() => sendMessage("cry")} />
-        </span>
-        <span>
-          <FaSurprise onClick={() => sendMessage("wow")} />
         </span>
         <span>
           <FaLaugh onClick={() => sendMessage("laugh")} />
